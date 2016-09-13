@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#212121</color>
+    <color name="colorPrimaryDark">#000000</color>
+    <color name="colorAccent">#1DE9B6</color>
+    <color name="colorAccentDark">#00BFA5</color>
+
+    <!-- For Name of Movie in Detail View -->
+    <color name="textIconColor">#FFFFFF</color>
+
+    <color name="textColorPrimary">#212121</color>
+    <color name="textColorSecondary">#757575</color>
+
+    <color name="dividerColor">#BDBDBD</color>
+</resources>

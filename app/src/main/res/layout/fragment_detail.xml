@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <ScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/scrollView">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="@dimen/layout_padding">
+
+            <!-- Movie Name -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:id="@+id/text_icon"
+                android:layout_alignParentTop="true"
+                android:textSize="@dimen/text_icon_size"
+                android:gravity="center_vertical"
+                android:background="@color/colorAccentDark"
+                android:textColor="@color/textIconColor"
+                android:paddingLeft="@dimen/layout_padding"
+                android:paddingRight="@dimen/layout_padding" />
+
+            <!-- Poster of movie -->
+            <ImageView
+                android:layout_height="250dp"
+                android:layout_width="170dp"
+                android:id="@+id/movie_poster"
+                android:layout_below="@id/text_icon"
+                android:layout_marginTop="@dimen/text_icon_imageview_gap"
+                android:layout_centerHorizontal="true"
+                android:contentDescription="@string/content_description" />
+
+            <android.support.v7.widget.CardView
+                xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/movie_poster"
+                android:layout_marginTop="@dimen/imageview_detail_gap"
+                android:layout_gravity="center_horizontal"
+                android:id="@+id/non_plot_details"
+                android:layout_marginLeft="@dimen/layout_margin"
+                android:layout_marginRight="@dimen/layout_margin"
+                card_view:cardUseCompatPadding="true"
+                card_view:cardCornerRadius="@dimen/card_view_corner_radius">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/layout_padding">
+
+                    <!-- Heading release date -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:textAppearance="?android:textAppearanceMedium"
+                        android:textColor="@color/textColorPrimary"
+                        android:text="@string/heading_released_on"/>
+
+                    <!-- Release date -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:id="@+id/release_date"
+                        android:textColor="@color/textColorSecondary"/>
+
+                    <!-- Divider -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/dividerColor"
+                        android:layout_marginTop="@dimen/divider_gap"
+                        android:layout_marginBottom="@dimen/divider_gap"/>
+
+                    <!-- Heading Rating -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:textAppearance="?android:textAppearanceMedium"
+                        android:textColor="@color/textColorPrimary"
+                        android:text="@string/heading_rating"/>
+
+                    <!-- Rating -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:id="@+id/rating"
+                        android:textColor="@color/textColorSecondary"/>
+
+                </LinearLayout>
+
+            </android.support.v7.widget.CardView>
+
+            <android.support.v7.widget.CardView
+                xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/non_plot_details"
+                android:layout_marginTop="@dimen/details_gap"
+                android:layout_marginLeft="@dimen/layout_margin"
+                android:layout_marginRight="@dimen/layout_margin"
+                card_view:cardUseCompatPadding="true"
+                card_view:cardCornerRadius="@dimen/card_view_corner_radius">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/layout_padding">
+
+                    <!-- Plot heading -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_weight="1"
+                        android:layout_height="0dp"
+                        android:textAppearance="?android:textAppearanceMedium"
+                        android:textColor="@color/textColorPrimary"
+                        android:text="@string/heading_plot"/>
+
+                    <!-- Synopsis of the movie -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_weight="1"
+                        android:layout_height="0dp"
+                        android:id="@+id/plot"
+                        android:textColor="@color/textColorSecondary"/>
+
+                </LinearLayout>
+
+            </android.support.v7.widget.CardView>
+
+        </RelativeLayout>
+
+    </ScrollView>
+
+</FrameLayout>

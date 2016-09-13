@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- used for ListPreference for sorting order of movie -->
+    <array name="order_entries">
+        <item>@string/order_option_popularity</item>
+        <item>@string/order_option_rating</item>
+    </array>
+
+    <array name="order_entry_values">
+        <item>@string/order_value_popularity</item>
+        <item>@string/order_value_rating</item>
+    </array>
+
+</resources>
