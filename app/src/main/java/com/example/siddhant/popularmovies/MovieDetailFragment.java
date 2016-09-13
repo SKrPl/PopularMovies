@@ -17,6 +17,9 @@ import com.squareup.picasso.Picasso;
  */
 public class MovieDetailFragment extends Fragment{
 
+    private static final String MOVIE_PARCELABLE_SAVED = "saved_instance_state";
+
+    private Movie mMovie;
     private TextView mMovieTitle;
     private ImageView mMoviePoster;
     private TextView mReleaseDate;
@@ -34,26 +37,39 @@ public class MovieDetailFragment extends Fragment{
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
         Intent intent = getActivity().getIntent();
 
+        if (savedInstanceState == null) {
+            mMovie = intent.getParcelableExtra(PosterFragment.MOVIE_PARCELABLE_KEY);
+        }
+        else {
+            mMovie = savedInstanceState.getParcelable(MOVIE_PARCELABLE_SAVED);
+        }
+
         mMovieTitle = (TextView) rootView.findViewById(R.id.text_icon);
-        String mTitle = intent.getStringExtra(Movie.TITLE);
+        String mTitle = mMovie.getTitle();
         mMovieTitle.setText(mTitle);
 
         mMoviePoster = (ImageView) rootView.findViewById(R.id.movie_poster);
-        String mPosterUrl = intent.getStringExtra(Movie.POSTER_URL);
+        String mPosterUrl = mMovie.getPosterUrl();
         Picasso.with(getActivity()).load(mPosterUrl).fit().into(mMoviePoster);
 
         mReleaseDate = (TextView) rootView.findViewById(R.id.release_date);
-        String mReleaseDate = intent.getStringExtra(Movie.RELEASE_DATE);
+        String mReleaseDate = mMovie.getReleaseDate();
         this.mReleaseDate.setText(mReleaseDate);
 
         mRating = (TextView) rootView.findViewById(R.id.rating);
-        String mRating = intent.getStringExtra(Movie.RATING) + "/10";
+        String mRating = mMovie.getRating() + "/10";
         this.mRating.setText(mRating);
 
         mPlot = (TextView) rootView.findViewById(R.id.plot);
-        String mPlot = intent.getStringExtra(Movie.PLOT);
+        String mPlot = mMovie.getPlot();
         this.mPlot.setText(mPlot);
 
         return rootView;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(MOVIE_PARCELABLE_SAVED, mMovie);
     }
 }

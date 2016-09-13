@@ -31,7 +31,11 @@ import java.util.ArrayList;
  */
 public class PosterFragment extends Fragment implements AdapterView.OnItemClickListener{
 
+    private final String MOVIE_LIST_PARCELABLE_KEY = "movie_parcelable_list";
+    public static final String MOVIE_PARCELABLE_KEY = "movie_parcelable";
+
     private MovieAdapter mMovieAdapter;
+    private ArrayList<Movie> mMovieList; // movie list, parcelable use for orientation change
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -44,19 +48,34 @@ public class PosterFragment extends Fragment implements AdapterView.OnItemClickL
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_poster, container, false);
 
-        mMovieAdapter = new MovieAdapter(getActivity(), new ArrayList<Movie>());
+        if (savedInstanceState == null) {
+            mMovieList = new ArrayList<>();
+        }
+        else {
+            mMovieList = savedInstanceState.getParcelableArrayList(MOVIE_LIST_PARCELABLE_KEY);
+        }
+
+        mMovieAdapter = new MovieAdapter(getActivity(), mMovieList);
         GridView gridView = (GridView) rootView.findViewById(R.id.poster_container);
         gridView.setAdapter(mMovieAdapter);
         gridView.setOnItemClickListener(this);
 
-        FetchMovieTask movieTask = new FetchMovieTask();
-        movieTask.execute(
-                PreferenceManager.getDefaultSharedPreferences(getActivity())
-                .getString(getString(R.string.order_key),
-                        getString(R.string.order_value_default))
-        );
+        if (savedInstanceState == null) {
+            FetchMovieTask movieTask = new FetchMovieTask();
+            movieTask.execute(
+                    PreferenceManager.getDefaultSharedPreferences(getActivity())
+                            .getString(getString(R.string.order_key),
+                                    getString(R.string.order_value_default))
+            );
+        }
 
         return rootView;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelableArrayList(MOVIE_LIST_PARCELABLE_KEY, mMovieList);
     }
 
     @Override
@@ -64,12 +83,7 @@ public class PosterFragment extends Fragment implements AdapterView.OnItemClickL
         Movie movie = (Movie) adapterView.getItemAtPosition(i);
 
         Intent intent = new Intent(getActivity(), MovieDetailActivity.class);
-        intent.putExtra(Movie.ID, movie.getID());
-        intent.putExtra(Movie.TITLE, movie.getTitle());
-        intent.putExtra(Movie.POSTER_URL, movie.getPosterUrl());
-        intent.putExtra(Movie.RELEASE_DATE, movie.getReleaseDate());
-        intent.putExtra(Movie.PLOT, movie.getPlot());
-        intent.putExtra(Movie.RATING, movie.getRating());
+        intent.putExtra(MOVIE_PARCELABLE_KEY, movie);
 
         startActivity(intent);
     }
@@ -94,6 +108,7 @@ public class PosterFragment extends Fragment implements AdapterView.OnItemClickL
             if (movieList != null) {
                 mMovieAdapter.clear();
                 mMovieAdapter.addAll(movieList);
+                mMovieList = movieList; // movie list assignment, parcelable use for orientation change
             }
         }
 

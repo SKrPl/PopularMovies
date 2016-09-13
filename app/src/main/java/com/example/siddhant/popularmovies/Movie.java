@@ -1,6 +1,8 @@
 package com.example.siddhant.popularmovies;
 
 import android.net.Uri;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
 
 import org.json.JSONException;
@@ -11,17 +13,17 @@ import java.net.MalformedURLException;
 /**
  * Created by siddhant on 8/26/16.
  */
-public class Movie {
+public class Movie implements Parcelable{
 
     /*
-    Keys to retrive data from JSONObject,
+    Keys to retrieve data from JSONObject,
     and intent received in MovieDetailFragment
      */
     public static final String ID = "id";
     public static final String TITLE = "original_title";
     public static final String RELEASE_DATE = "release_date";
-    public static final String PLOT = "overview";
     public static final String POSTER_URL = "poster_path";
+    public static final String PLOT = "overview";
     public static final String RATING = "vote_average";
 
     private final String LOG_TAG = Movie.class.getSimpleName();
@@ -47,6 +49,15 @@ public class Movie {
         catch(MalformedURLException e) {
             Log.e(LOG_TAG, "Error", e);
         }
+    }
+
+    private Movie(Parcel parcel) {
+        mId = parcel.readInt();
+        mTitle = parcel.readString();
+        mReleaseDate = parcel.readString();
+        mPosterUrl = parcel.readString();
+        mPlot = parcel.readString();
+        mRating = parcel.readString();
     }
 
     private String buildAbsolutePosterPath(String relativePath) throws MalformedURLException {
@@ -84,4 +95,31 @@ public class Movie {
     public String getRating() {
         return mRating;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(mId);
+        dest.writeString(mTitle);
+        dest.writeString(mReleaseDate);
+        dest.writeString(mPosterUrl);
+        dest.writeString(mPlot);
+        dest.writeString(mRating);
+    }
+
+    public static final Parcelable.Creator<Movie> CREATOR = new Parcelable.Creator<Movie>() {
+        @Override
+        public Movie createFromParcel(Parcel source) {
+            return new Movie(source);
+        }
+
+        @Override
+        public Movie[] newArray(int size) {
+            return new Movie[size];
+        }
+    };
 }
