@@ -48,20 +48,10 @@ public class MainActivity extends AppCompatActivity {
         if connected show movie posters in grid view,
         adding PosterFragment
          */
-        if (savedInstanceState == null && (isOnline())) {
+        if (savedInstanceState == null) {
             fragmentManager
                     .beginTransaction()
                     .add(R.id.fragment_container, mFragment)
-                    .commit();
-        }
-
-        /*
-        show NoNetwork Fragment
-         */
-        else {
-            fragmentManager
-                    .beginTransaction()
-                    .add(R.id.fragment_container, new NoNetworkFragment())
                     .commit();
         }
     }

@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.siddhant.popularmovies.models.Movie;
 import com.squareup.picasso.Picasso;
 
 /**
@@ -57,11 +58,11 @@ public class MovieDetailFragment extends Fragment{
         this.mReleaseDate.setText(mReleaseDate);
 
         mRating = (TextView) rootView.findViewById(R.id.rating);
-        String mRating = mMovie.getRating() + "/10";
+        String mRating = mMovie.getVoteAverage() + "/10";
         this.mRating.setText(mRating);
 
         mPlot = (TextView) rootView.findViewById(R.id.plot);
-        String mPlot = mMovie.getPlot();
+        String mPlot = mMovie.getOverview();
         this.mPlot.setText(mPlot);
 
         return rootView;
