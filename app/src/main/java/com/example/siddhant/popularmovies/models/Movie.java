@@ -11,6 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,7 +23,7 @@ public class Movie implements Parcelable{
     private boolean adult;
     private String overview;
     private String releaseDate;
-    private List<Integer> genreIds;
+    private ArrayList<Integer> genreIds;
     private int id;
     private String originalTitle;
     private String origianlLangugae;
@@ -65,11 +66,11 @@ public class Movie implements Parcelable{
         this.releaseDate = releaseDate;
     }
 
-    public List<Integer> getGenreIds() {
+    public ArrayList<Integer> getGenreIds() {
         return genreIds;
     }
 
-    public void setGenreIds(List<Integer> genreIds) {
+    public void setGenreIds(ArrayList<Integer> genreIds) {
         this.genreIds = genreIds;
     }
 
@@ -179,7 +180,7 @@ public class Movie implements Parcelable{
         adult = source.readInt() == 1 ? true : false;
         overview = source.readString();
         releaseDate = source.readString();
-        source.readList(genreIds, List.class.getClassLoader());
+        genreIds = source.readArrayList(Integer.class.getClassLoader());
         id = source.readInt();
         originalTitle = source.readString();
         origianlLangugae = source.readString();
