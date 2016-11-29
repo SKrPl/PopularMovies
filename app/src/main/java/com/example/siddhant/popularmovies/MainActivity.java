@@ -16,22 +16,11 @@ public class MainActivity extends AppCompatActivity {
 
     private final String LOG_TAG = MainActivity.class.getSimpleName();
 
-    private ConnectivityManager mConnectivityManager;
     private PosterFragment mFragment;
 
     @Override
     protected void onStart() {
         super.onStart();
-    }
-
-    private boolean isOnline() {
-        /**
-         * Checks internet connectivity, so that app won't crash
-         * Returns: boolean according to internet connectivity
-         */
-        NetworkInfo networkInfo = mConnectivityManager.getActiveNetworkInfo();
-
-        return (networkInfo != null && networkInfo.isConnected());
     }
 
     @Override
@@ -42,12 +31,6 @@ public class MainActivity extends AppCompatActivity {
         FragmentManager fragmentManager = getFragmentManager();
         mFragment = new PosterFragment();
 
-        mConnectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        /*
-        if connected show movie posters in grid view,
-        adding PosterFragment
-         */
         if (savedInstanceState == null) {
             fragmentManager
                     .beginTransaction()
@@ -78,18 +61,6 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, SettingsActivity.class);
         startActivity(intent);
         return true;
-    }
-
-    public void retryConnecting(View view) {
-        /**
-         * onClickListener for Retry button in NoNetworkFragment
-         */
-        if (isOnline()) {
-            getFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fragment_container, mFragment)
-                    .commit();
-        }
     }
 
 }

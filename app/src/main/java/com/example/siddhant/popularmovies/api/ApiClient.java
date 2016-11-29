@@ -1,6 +1,7 @@
 package com.example.siddhant.popularmovies.api;
 
 import com.google.gson.FieldNamingPolicy;
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import retrofit2.Retrofit;
@@ -17,16 +18,20 @@ public class ApiClient {
 
     public static Retrofit getApiClient() {
         if (retrofit == null) {
-            GsonBuilder gsonBuilder = new GsonBuilder()
-                    .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES);
+            Gson gson = new GsonBuilder()
+                    .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                    .create();
 
             retrofit = new Retrofit.Builder()
                     .baseUrl(BASE_URL)
                     .addConverterFactory(
-                            GsonConverterFactory.create(
-                                    gsonBuilder.create()))
+                            GsonConverterFactory.create(gson))
                     .build();
         }
         return retrofit;
+    }
+
+    public static <T> T getRequest(Class<T> className) {
+        return getApiClient().create(className);
     }
 }

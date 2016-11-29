@@ -177,7 +177,7 @@ public class Movie implements Parcelable{
 
     private Movie(Parcel source) {
         posterPath = source.readString();
-        adult = source.readInt() == 1 ? true : false;
+        adult = source.readInt() == 1;
         overview = source.readString();
         releaseDate = source.readString();
         genreIds = source.readArrayList(Integer.class.getClassLoader());
@@ -188,7 +188,7 @@ public class Movie implements Parcelable{
         backdropPath = source.readString();
         popularity = source.readDouble();
         voteCount = source.readInt();
-        video = source.readInt() == 1 ? true : false;
+        video = source.readInt() == 1;
         voteAverage = source.readDouble();
     }
 

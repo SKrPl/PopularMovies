@@ -2,10 +2,7 @@ package com.example.siddhant.popularmovies;
 
 import android.app.Fragment;
 import android.content.Intent;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,16 +16,6 @@ import com.example.siddhant.popularmovies.api.MovieApiRequests;
 import com.example.siddhant.popularmovies.models.Movie;
 import com.example.siddhant.popularmovies.models.MoviesApiResponse;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 
 import retrofit2.Call;
@@ -38,7 +25,7 @@ import retrofit2.Response;
 /**
  * Created by siddhant on 8/20/16.
  */
-public class PosterFragment extends Fragment implements AdapterView.OnItemClickListener{
+public class PosterFragment extends Fragment implements AdapterView.OnItemClickListener {
 
     private final String LOG_TAG = PosterFragment.class.getSimpleName();
     private final String MOVIE_LIST_PARCELABLE_KEY = "movie_parcelable_list";
@@ -61,8 +48,7 @@ public class PosterFragment extends Fragment implements AdapterView.OnItemClickL
 
         if (savedInstanceState == null) {
             mMovieList = new ArrayList<Movie>();
-            MovieApiRequests movieApiRequests = ApiClient.getApiClient().
-                    create(MovieApiRequests.class);
+            MovieApiRequests movieApiRequests = ApiClient.getRequest(MovieApiRequests.class);
             String sortingCriteria = Utility.getSortingCriteria(getActivity());
 
             Call<MoviesApiResponse> call = movieApiRequests.getMovies(
@@ -72,24 +58,29 @@ public class PosterFragment extends Fragment implements AdapterView.OnItemClickL
                 @Override
                 public void onResponse(Call<MoviesApiResponse> call, Response<MoviesApiResponse> response) {
                     mMovieList = response.body().getResults();
+                    mMovieAdapter.addAll(mMovieList);
                     Log.d(LOG_TAG, "Number of movies received: " + mMovieList.size());
                 }
 
                 @Override
                 public void onFailure(Call<MoviesApiResponse> call, Throwable t) {
+                    getFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.fragment_container,
+                                    new NoNetworkFragment())
+                            .commit();
                     Log.e(LOG_TAG, t.toString());
                 }
             });
-        }
-        else {
+        } else {
             mMovieList = savedInstanceState.getParcelableArrayList(MOVIE_LIST_PARCELABLE_KEY);
+            Log.d(LOG_TAG, "Number of movies restored from Parcel: " + mMovieList.size());
         }
 
         mMovieAdapter = new MovieAdapter(getActivity(), mMovieList);
         GridView gridView = (GridView) rootView.findViewById(R.id.poster_container);
         gridView.setAdapter(mMovieAdapter);
         gridView.setOnItemClickListener(this);
-
 
         return rootView;
     }
