@@ -26,7 +26,15 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:24.2.0'
+
+    //picasso for image loading
     compile 'com.squareup.picasso:picasso:2.5.2'
+
+    //material design
     compile 'com.android.support:design:24.2.0'
     compile 'com.android.support:cardview-v7:24.2.0'
+
+    //retrofit for http requests
+    compile 'com.squareup.retrofit2:retrofit:2.1.0'
+    compile 'com.squareup.retrofit2:converter-gson:2.1.0'
 }

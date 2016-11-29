@@ -23,11 +23,12 @@ public class NoNetworkFragment extends Fragment {
         retryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.fragment_container,
-                                new PosterFragment())
-                        .commit();
+                Utility.replaceFragment(
+                        getActivity(),
+                        R.id.fragment_container,
+                        new PosterFragment(),
+                        null
+                );
             }
         });
         return view;

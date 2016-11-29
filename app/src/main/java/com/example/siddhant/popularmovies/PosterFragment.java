@@ -64,11 +64,12 @@ public class PosterFragment extends Fragment implements AdapterView.OnItemClickL
 
                 @Override
                 public void onFailure(Call<MoviesApiResponse> call, Throwable t) {
-                    getFragmentManager()
-                            .beginTransaction()
-                            .replace(R.id.fragment_container,
-                                    new NoNetworkFragment())
-                            .commit();
+                    Utility.replaceFragment(
+                            getActivity(),
+                            R.id.fragment_container,
+                            new NoNetworkFragment(),
+                            null
+                    );
                     Log.e(LOG_TAG, t.toString());
                 }
             });
