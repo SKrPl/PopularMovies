@@ -23,6 +23,5 @@
         android:id="@+id/button"
         android:layout_below="@+id/textView"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/retry_message_and_button_gap"
-        android:onClick="retryConnecting"/>
+        android:layout_marginTop="@dimen/retry_message_and_button_gap" />
 </RelativeLayout>
