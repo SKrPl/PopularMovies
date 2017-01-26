@@ -4,12 +4,13 @@ import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.GridView;
 
 import com.example.siddhant.popularmovies.api.ApiClient;
 import com.example.siddhant.popularmovies.api.MovieApiRequests;
@@ -25,7 +26,7 @@ import retrofit2.Response;
 /**
  * Created by siddhant on 8/20/16.
  */
-public class PosterFragment extends Fragment implements AdapterView.OnItemClickListener {
+public class PosterFragment extends Fragment implements MovieAdapter.OnItemClickListener{
 
     private final String LOG_TAG = PosterFragment.class.getSimpleName();
     private final String MOVIE_LIST_PARCELABLE_KEY = "movie_parcelable_list";
@@ -57,9 +58,8 @@ public class PosterFragment extends Fragment implements AdapterView.OnItemClickL
             call.enqueue(new Callback<MoviesApiResponse>() {
                 @Override
                 public void onResponse(Call<MoviesApiResponse> call, Response<MoviesApiResponse> response) {
-                    mMovieList = response.body().getResults();
-                    mMovieAdapter.addAll(mMovieList);
-                    Log.d(LOG_TAG, "Number of movies received: " + mMovieList.size());
+                    mMovieAdapter.setMovieList(response.body().getResults());
+                    Log.d(LOG_TAG, "Number of movies received: " + mMovieAdapter.getItemCount());
                 }
 
                 @Override
@@ -78,10 +78,10 @@ public class PosterFragment extends Fragment implements AdapterView.OnItemClickL
             Log.d(LOG_TAG, "Number of movies restored from Parcel: " + mMovieList.size());
         }
 
-        mMovieAdapter = new MovieAdapter(getActivity(), mMovieList);
-        GridView gridView = (GridView) rootView.findViewById(R.id.poster_container);
-        gridView.setAdapter(mMovieAdapter);
-        gridView.setOnItemClickListener(this);
+        mMovieAdapter = new MovieAdapter(getActivity(), mMovieList, this);
+        RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.poster_container);
+        recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
+        recyclerView.setAdapter(mMovieAdapter);
 
         return rootView;
     }
@@ -89,16 +89,14 @@ public class PosterFragment extends Fragment implements AdapterView.OnItemClickL
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putParcelableArrayList(MOVIE_LIST_PARCELABLE_KEY, mMovieList);
+        outState.putParcelableArrayList(MOVIE_LIST_PARCELABLE_KEY, mMovieAdapter.getMovieList());
     }
 
     @Override
-    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-        Movie movie = (Movie) adapterView.getItemAtPosition(i);
-
+    public void setOnClickListener(int position, Object movie) {
+        Movie receivedMovie = (Movie) movie;
         Intent intent = new Intent(getActivity(), MovieDetailActivity.class);
-        intent.putExtra(MOVIE_PARCELABLE_KEY, movie);
-
+        intent.putExtra(PosterFragment.MOVIE_PARCELABLE_KEY, receivedMovie);
         startActivity(intent);
     }
 }
