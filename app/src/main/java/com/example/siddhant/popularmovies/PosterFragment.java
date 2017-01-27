@@ -2,15 +2,17 @@ package com.example.siddhant.popularmovies;
 
 import android.app.Fragment;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
+import android.view.ViewTreeObserver;
 
 import com.example.siddhant.popularmovies.api.ApiClient;
 import com.example.siddhant.popularmovies.api.MovieApiRequests;
@@ -26,7 +28,7 @@ import retrofit2.Response;
 /**
  * Created by siddhant on 8/20/16.
  */
-public class PosterFragment extends Fragment implements MovieAdapter.OnItemClickListener{
+public class PosterFragment extends Fragment implements MovieAdapter.OnItemClickListener {
 
     private final String LOG_TAG = PosterFragment.class.getSimpleName();
     private final String MOVIE_LIST_PARCELABLE_KEY = "movie_parcelable_list";
@@ -79,8 +81,24 @@ public class PosterFragment extends Fragment implements MovieAdapter.OnItemClick
         }
 
         mMovieAdapter = new MovieAdapter(getActivity(), mMovieList, this);
-        RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.poster_container);
-        recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
+        final RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.poster_container);
+
+        rootView.getViewTreeObserver().addOnGlobalLayoutListener(
+                new ViewTreeObserver.OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        int width = recyclerView.getWidth();
+
+                        Resources resources = getResources();
+                        int imageViewWidth = (int) TypedValue
+                                .applyDimension(TypedValue.COMPLEX_UNIT_DIP, 180, resources.getDisplayMetrics());
+
+                        recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), width/imageViewWidth));
+
+                        recyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    }
+                });
+
         recyclerView.setAdapter(mMovieAdapter);
 
         return rootView;
@@ -99,4 +117,5 @@ public class PosterFragment extends Fragment implements MovieAdapter.OnItemClick
         intent.putExtra(PosterFragment.MOVIE_PARCELABLE_KEY, receivedMovie);
         startActivity(intent);
     }
+
 }
