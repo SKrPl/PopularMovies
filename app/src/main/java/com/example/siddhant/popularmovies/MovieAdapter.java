@@ -1,6 +1,7 @@
 package com.example.siddhant.popularmovies;
 
 import android.content.Context;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,27 +17,71 @@ import java.util.ArrayList;
  * Created by siddhant on 8/26/16.
  */
 
-public class MovieAdapter extends ArrayAdapter {
+public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MoviePosterViewHolder> {
 
     private Context mContext;
-    private LayoutInflater mInflater;
 
-    public MovieAdapter(Context context, ArrayList<Movie> movies) {
-        super(context, R.layout.grid_item_movie, movies);
-        this.mContext = context;
-        mInflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    private OnItemClickListener mClickListener;
+
+    private ArrayList<Movie> mMovieList;
+
+    public MovieAdapter(Context context,
+                        ArrayList<Movie> movies,
+                        OnItemClickListener itemClickListener) {
+        mContext = context;
+        mMovieList = movies;
+        mClickListener = itemClickListener;
+    }
+
+    public interface OnItemClickListener {
+        public void setOnClickListener(int position, Object movie);
+    }
+
+    class MoviePosterViewHolder extends RecyclerView.ViewHolder {
+
+        ImageView mMoviePoster;
+
+        public MoviePosterViewHolder(View itemView) {
+            super(itemView);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int position = getLayoutPosition();
+                    Movie movie = mMovieList.get(position);
+                    mClickListener.setOnClickListener(position, movie);
+                }
+            });
+
+            mMoviePoster = (ImageView) itemView.findViewById(R.id.poster);
+        }
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        Movie movie = (Movie) getItem(position);
-        String url = movie.getPosterUrl();
+    public MoviePosterViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        LayoutInflater inflater = LayoutInflater.from(mContext);
+        View view = inflater.inflate(R.layout.grid_item_movie, parent, false);
+        return new MoviePosterViewHolder(view);
+    }
 
-        if (convertView == null)
-            convertView = mInflater.inflate(R.layout.grid_item_movie, parent, false);
+    @Override
+    public void onBindViewHolder(MoviePosterViewHolder holder, int position) {
+        Movie movie = mMovieList.get(position);
+        String posterUrl = movie.getPosterUrl();
+        Picasso.with(mContext).load(posterUrl).fit().into(holder.mMoviePoster);
+    }
 
-        Picasso.with(mContext).load(url).fit().into((ImageView) convertView);
+    @Override
+    public int getItemCount() {
+        return mMovieList.size();
+    }
 
-        return convertView;
+    public void setMovieList(ArrayList<Movie> movies) {
+        mMovieList = movies;
+        notifyDataSetChanged();
+    }
+
+    public ArrayList<Movie> getMovieList() {
+        return mMovieList;
     }
 }

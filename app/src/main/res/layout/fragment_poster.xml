@@ -4,13 +4,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-
-    <GridView
+    <android.support.v7.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/poster_container"
-        android:layout_gravity="center_horizontal"
-        android:numColumns="auto_fit"
-        android:columnWidth="@dimen/grid_view_column_width" />
+        android:layout_gravity="center_horizontal" />
 
 </LinearLayout>
