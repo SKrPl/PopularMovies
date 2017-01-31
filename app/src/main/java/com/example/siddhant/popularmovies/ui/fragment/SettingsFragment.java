@@ -1,4 +1,4 @@
-package com.example.siddhant.popularmovies;
+package com.example.siddhant.popularmovies.ui.fragment;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -6,6 +6,8 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+
+import com.example.siddhant.popularmovies.R;
 
 /**
  * Created by siddhant on 8/30/16.

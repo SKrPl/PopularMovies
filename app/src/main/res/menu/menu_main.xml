@@ -3,8 +3,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:title="@string/action_setting"
+        android:title="@string/action_popular"
         app:showAsAction="never"
-        android:id="@+id/main_setting"
-        android:orderInCategory="200" />
+        android:id="@+id/main_popular"/>
+
+    <item
+        android:title="@string/action_top_rated"
+        app:showAsAction="never"
+        android:id="@+id/main_top_rated"/>
+
+    <item
+        android:title="@string/action_favourite"
+        app:showAsAction="never"
+        android:id="@+id/main_favourite" />
+
 </menu>

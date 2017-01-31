@@ -1,4 +1,4 @@
-package com.example.siddhant.popularmovies;
+package com.example.siddhant.popularmovies.ui.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -6,6 +6,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+
+import com.example.siddhant.popularmovies.ui.fragment.MovieDetailFragment;
+import com.example.siddhant.popularmovies.R;
 
 /**
  * Created by siddhant on 8/28/16.
@@ -18,9 +21,10 @@ public class MovieDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_detail);
 
         if (savedInstanceState == null) {
-            getFragmentManager()
+            MovieDetailFragment fragment = MovieDetailFragment.newInstance(false);
+            getSupportFragmentManager()
                     .beginTransaction()
-                    .add(R.id.detail_fragment_container, new MovieDetailFragment())
+                    .add(R.id.detail_fragment_container, fragment)
                     .commit();
         }
     }
