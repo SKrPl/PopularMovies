@@ -16,7 +16,7 @@ public class ApiClient {
     private static final String BASE_URL = "http://api.themoviedb.org/3/";
     private static Retrofit retrofit;
 
-    public static Retrofit getApiClient() {
+    private static Retrofit getApiClient() {
         if (retrofit == null) {
             Gson gson = new GsonBuilder()
                     .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)

@@ -20,19 +20,23 @@ import java.util.List;
 public class Movie implements Parcelable{
 
     private String posterPath;
-    private boolean adult;
     private String overview;
     private String releaseDate;
-    private ArrayList<Integer> genreIds;
     private int id;
-    private String originalTitle;
-    private String origianlLangugae;
     private String title;
     private String backdropPath;
-    private double popularity;
-    private int voteCount;
-    private boolean video;
     private double voteAverage;
+
+    public Movie(String posterPath, String overview, String releaseDate, int id,
+                 String title, String backdropPath, double voteAverage) {
+        this.posterPath = posterPath;
+        this.overview = overview;
+        this.releaseDate = releaseDate;
+        this.id = id;
+        this.title = title;
+        this.backdropPath = backdropPath;
+        this.voteAverage = voteAverage;
+    }
 
     public String getPosterPath() {
         return posterPath;
@@ -40,14 +44,6 @@ public class Movie implements Parcelable{
 
     public void setPosterPath(String posterPath) {
         this.posterPath = posterPath;
-    }
-
-    public boolean isAdult() {
-        return adult;
-    }
-
-    public void setAdult(boolean adult) {
-        this.adult = adult;
     }
 
     public String getOverview() {
@@ -66,36 +62,12 @@ public class Movie implements Parcelable{
         this.releaseDate = releaseDate;
     }
 
-    public ArrayList<Integer> getGenreIds() {
-        return genreIds;
-    }
-
-    public void setGenreIds(ArrayList<Integer> genreIds) {
-        this.genreIds = genreIds;
-    }
-
     public int getId() {
         return id;
     }
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public String getOriginalTitle() {
-        return originalTitle;
-    }
-
-    public void setOriginalTitle(String originalTitle) {
-        this.originalTitle = originalTitle;
-    }
-
-    public String getOrigianlLangugae() {
-        return origianlLangugae;
-    }
-
-    public void setOrigianlLangugae(String origianlLangugae) {
-        this.origianlLangugae = origianlLangugae;
     }
 
     public String getTitle() {
@@ -114,30 +86,6 @@ public class Movie implements Parcelable{
         this.backdropPath = backdropPath;
     }
 
-    public double getPopularity() {
-        return popularity;
-    }
-
-    public void setPopularity(double popularity) {
-        this.popularity = popularity;
-    }
-
-    public int getVoteCount() {
-        return voteCount;
-    }
-
-    public void setVoteCount(int voteCount) {
-        this.voteCount = voteCount;
-    }
-
-    public boolean isVideo() {
-        return video;
-    }
-
-    public void setVideo(boolean video) {
-        this.video = video;
-    }
-
     public double getVoteAverage() {
         return voteAverage;
     }
@@ -149,7 +97,14 @@ public class Movie implements Parcelable{
     public String getPosterUrl() {
         String baseUrl = "http://image.tmdb.org/t/p/";
         String posterSize = "w185/";
-        return baseUrl + posterSize + posterPath;
+        return baseUrl + posterSize + getPosterPath();
+    }
+
+    public String getBackdropUrl() {
+        String baseUrl = "http://image.tmdb.org/t/p/";
+        String backdropSize = "w500/";
+        System.out.println(baseUrl + backdropSize + getBackdropPath());
+        return baseUrl + backdropSize + getBackdropPath();
     }
 
     @Override
@@ -160,35 +115,21 @@ public class Movie implements Parcelable{
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(posterPath);
-        dest.writeInt(adult ? 1 : 0);
         dest.writeString(overview);
         dest.writeString(releaseDate);
-        dest.writeList(genreIds);
         dest.writeInt(id);
-        dest.writeString(originalTitle);
-        dest.writeString(origianlLangugae);
         dest.writeString(title);
         dest.writeString(backdropPath);
-        dest.writeDouble(popularity);
-        dest.writeInt(voteCount);
-        dest.writeInt(video ? 1: 0);
         dest.writeDouble(voteAverage);
     }
 
     private Movie(Parcel source) {
         posterPath = source.readString();
-        adult = source.readInt() == 1;
         overview = source.readString();
         releaseDate = source.readString();
-        genreIds = source.readArrayList(Integer.class.getClassLoader());
         id = source.readInt();
-        originalTitle = source.readString();
-        origianlLangugae = source.readString();
         title = source.readString();
         backdropPath = source.readString();
-        popularity = source.readDouble();
-        voteCount = source.readInt();
-        video = source.readInt() == 1;
         voteAverage = source.readDouble();
     }
 

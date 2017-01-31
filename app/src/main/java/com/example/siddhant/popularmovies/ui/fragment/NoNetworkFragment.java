@@ -1,13 +1,16 @@
-package com.example.siddhant.popularmovies;
+package com.example.siddhant.popularmovies.ui.fragment;
 
-import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.Toast;
+
+import com.example.siddhant.popularmovies.R;
+import com.example.siddhant.popularmovies.Utility;
 
 /**
  * Created by siddhant on 8/31/16.
@@ -23,12 +26,10 @@ public class NoNetworkFragment extends Fragment {
         retryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Utility.replaceFragment(
-                        getActivity(),
-                        R.id.fragment_container,
-                        new PosterFragment(),
-                        null
-                );
+                FragmentManager fm = getActivity().getSupportFragmentManager();
+                fm.beginTransaction()
+                        .replace(R.id.fragment_container, new PosterFragment())
+                        .commit();
             }
         });
         return view;
