@@ -23,7 +23,7 @@ public class NoNetworkFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_no_network, container, false);
 
         Button retryButton = (Button) view.findViewById(R.id.button);
-        retryButton.setOnClickListener(new View.OnClickListener() {
+        /*retryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 FragmentManager fm = getActivity().getSupportFragmentManager();
@@ -31,7 +31,7 @@ public class NoNetworkFragment extends Fragment {
                         .replace(R.id.fragment_container, new PosterFragment())
                         .commit();
             }
-        });
+        });*/
         return view;
     }
 }

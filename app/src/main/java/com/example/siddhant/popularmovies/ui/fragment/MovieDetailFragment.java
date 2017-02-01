@@ -52,12 +52,14 @@ import retrofit2.Response;
  */
 public class MovieDetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
 
+    private final String LOG_TAG = MovieDetailFragment.class.getSimpleName();
     private final String MOVIE_PARCELABLE_SAVED = "movie_parcel";
     private final String REVIEWS_PARCELABLE_SAVED = "review_parcel";
     private final String VIDEOS_PARCELABLE_SAVED = "video_parcel";
     private final int MOVIE_DETAIL_LOADER_ID = 200;
+
     private static final String IS_TWO_PANE = "two_pane";
-    private final String LOG_TAG = MovieDetailFragment.class.getSimpleName();
+    private static final String TWO_PANE_MOVIE = "movie";
 
     private Movie mMovie;
 
@@ -81,15 +83,21 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
     private List<Video> mVideoList = new ArrayList<>();
     private Cursor mVideoCursor;
     private Cursor mReviewCursor;
+    private DbMovieUiUpdateListener mDbMovieUiUpdateListener;
 
     private boolean mTwoPane;
     private boolean mFirstTimeLoaderUse = true;
     private int mCurrentVideo = 0;
 
 
-    public static MovieDetailFragment newInstance(boolean isTwoPane) {
+    public interface DbMovieUiUpdateListener {
+        public void updatePosterFragmentUi();
+    }
+
+    public static MovieDetailFragment newInstance(Movie movie, boolean isTwoPane) {
         Bundle args = new Bundle();
         args.putBoolean(IS_TWO_PANE, isTwoPane);
+        args.putParcelable(TWO_PANE_MOVIE, movie);
         MovieDetailFragment fragment = new MovieDetailFragment();
         fragment.setArguments(args);
         return fragment;
@@ -101,6 +109,15 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
         Bundle args = getArguments();
         if (args != null) {
             mTwoPane = args.getBoolean(IS_TWO_PANE);
+            mMovie = args.getParcelable(TWO_PANE_MOVIE);
+        }
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (mTwoPane) {
+            mDbMovieUiUpdateListener = (DbMovieUiUpdateListener) getActivity();
         }
     }
 
@@ -108,7 +125,6 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
-        Intent intent = getActivity().getIntent();
 
         Toolbar toolbar = (Toolbar) rootView.findViewById(R.id.toolbar);
         mMoviePoster = (ImageView) rootView.findViewById(R.id.movie_poster);
@@ -136,8 +152,12 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
             mFirstTimeLoaderUse = false;
         }
 
-        if (savedInstanceState == null) {
+        if (!mTwoPane) {
+            Intent intent = getActivity().getIntent();
             mMovie = intent.getParcelableExtra(PosterFragment.MOVIE_PARCELABLE_KEY);
+        }
+
+        if (savedInstanceState == null) {
             getReviews();
             getVideos();
         } else {
@@ -180,10 +200,10 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
                     getActivity().onBackPressed();
                 }
             });
-            toolbar.setTitle(mMovie.getTitle());
-            toolbar.setTitleTextColor(Color.WHITE);
         }
 
+        toolbar.setTitle(mMovie.getTitle());
+        toolbar.setTitleTextColor(Color.WHITE);
 
         String mPosterUrl = mMovie.getBackdropUrl();
         Picasso.with(getActivity()).load(mPosterUrl).fit().into(mMoviePoster);
@@ -309,6 +329,10 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
                         getActivity(),
                         mMovie.getTitle() + " removed from favourite.",
                         Toast.LENGTH_SHORT).show();
+
+                if(mTwoPane) {
+                    mDbMovieUiUpdateListener.updatePosterFragmentUi();
+                }
             }
         });
 
