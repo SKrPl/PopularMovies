@@ -34,7 +34,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MoviePosterV
     }
 
     public interface OnItemClickListener {
-        public void setOnClickListener(int position, Object movie);
+        public void setOnClickListener(Movie movie);
     }
 
     class MoviePosterViewHolder extends RecyclerView.ViewHolder {
@@ -49,7 +49,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MoviePosterV
                 public void onClick(View v) {
                     int position = getLayoutPosition();
                     Movie movie = mMovieList.get(position);
-                    mClickListener.setOnClickListener(position, movie);
+                    mClickListener.setOnClickListener(movie);
                 }
             });
 

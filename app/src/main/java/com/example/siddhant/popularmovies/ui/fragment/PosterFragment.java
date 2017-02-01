@@ -2,6 +2,8 @@ package com.example.siddhant.popularmovies.ui.fragment;
 
 
 import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.content.Intent;
@@ -34,6 +36,7 @@ import com.example.siddhant.popularmovies.api.MovieApiRequests;
 import com.example.siddhant.popularmovies.data.PopMoviesContract;
 import com.example.siddhant.popularmovies.models.Movie;
 import com.example.siddhant.popularmovies.models.MoviesApiResponse;
+import com.example.siddhant.popularmovies.ui.activity.MainActivity;
 import com.example.siddhant.popularmovies.ui.activity.MovieDetailActivity;
 
 import java.util.ArrayList;
@@ -61,9 +64,14 @@ public class PosterFragment extends Fragment implements
     private MovieAdapter mMovieAdapter;
     private ArrayList<Movie> mMovieList = new ArrayList<Movie>();
     private String mSortingCriteria = "popular";
+    private RecyclerViewClickCallback mRecyclerViewClickCallback;
 
     private Toolbar mToolbar;
     private SharedPreferences mSharedPref;
+
+    public interface RecyclerViewClickCallback {
+        public void onRecyclerViewItemSelected(Movie movie);
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -71,6 +79,12 @@ public class PosterFragment extends Fragment implements
         mSharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
         setDbValue(false);
         setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        mRecyclerViewClickCallback = (RecyclerViewClickCallback) getActivity();
     }
 
     @Nullable
@@ -127,6 +141,10 @@ public class PosterFragment extends Fragment implements
     }
 
     private void makeRequest() {
+        setDbValue(false);
+        final boolean twoPane = PreferenceManager.getDefaultSharedPreferences(getActivity())
+                .getBoolean(MainActivity.SHARED_PREF_IS_TWO_PANE, false);
+
         MovieApiRequests movieApiRequests = ApiClient.getRequest(MovieApiRequests.class);
 
         String sortingCriteria = Utility.getSortingCriteria(getActivity());
@@ -141,15 +159,18 @@ public class PosterFragment extends Fragment implements
                     Response<MoviesApiResponse> response) {
                 mMovieList = response.body().getResults();
                 mMovieAdapter.setMovieList(mMovieList);
+                if (twoPane) {
+                    setOnClickListener(mMovieList.get(0));
+                }
                 Log.d(LOG_TAG, "Number of movies received: " + mMovieAdapter.getItemCount());
             }
 
             @Override
             public void onFailure(Call<MoviesApiResponse> call, Throwable t) {
-                FragmentManager fm = getActivity().getSupportFragmentManager();
+                /*FragmentManager fm = getActivity().getSupportFragmentManager();
                 fm.beginTransaction()
                         .replace(R.id.fragment_container, new NoNetworkFragment())
-                        .commit();
+                        .commit();*/
 
                 Log.e(LOG_TAG, t.toString());
             }
@@ -164,11 +185,8 @@ public class PosterFragment extends Fragment implements
     }
 
     @Override
-    public void setOnClickListener(int position, Object movie) {
-        Movie receivedMovie = (Movie) movie;
-        Intent intent = new Intent(getActivity(), MovieDetailActivity.class);
-        intent.putExtra(PosterFragment.MOVIE_PARCELABLE_KEY, receivedMovie);
-        startActivity(intent);
+    public void setOnClickListener(Movie movie) {
+        mRecyclerViewClickCallback.onRecyclerViewItemSelected(movie);
     }
 
     @Override
@@ -176,17 +194,14 @@ public class PosterFragment extends Fragment implements
         switch (item.getItemId()) {
             case R.id.main_popular:
                 mSortingCriteria = "popular";
-                setDbValue(false);
                 makeRequest();
                 break;
             case R.id.main_top_rated:
                 mSortingCriteria = "top_rated";
-                setDbValue(false);
                 makeRequest();
                 break;
             case R.id.main_favourite:
                 mSortingCriteria = "favourites";
-                setDbValue(true);
                 getLoaderManager().restartLoader(POSTERS_LOADER_ID, null, this);
                 break;
         }
@@ -199,7 +214,6 @@ public class PosterFragment extends Fragment implements
 
     @Override
     public void onResume() {
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
         boolean val = mSharedPref.getBoolean(SHARED_PREF_DB_KEY, false);
         if (val) {
             getLoaderManager().restartLoader(POSTERS_LOADER_ID, null, this);
@@ -227,8 +241,23 @@ public class PosterFragment extends Fragment implements
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        setDbValue(true);
+        final boolean twoPane = PreferenceManager.getDefaultSharedPreferences(getActivity())
+                .getBoolean(MainActivity.SHARED_PREF_IS_TWO_PANE, false);
         mMovieList = cursorToMovieList(data);
         mMovieAdapter.setMovieList(mMovieList);
+
+        Handler handler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                if (twoPane && mMovieList.size() != 0) {
+                    setOnClickListener(mMovieList.get(0));
+                }
+                super.handleMessage(msg);
+            }
+        };
+        handler.sendEmptyMessage(0);
+
     }
 
     @Override
@@ -266,5 +295,9 @@ public class PosterFragment extends Fragment implements
             movies.add(movie);
         }
         return movies;
+    }
+
+    public void initLoader() {
+        getLoaderManager().restartLoader(POSTERS_LOADER_ID, null, this);
     }
 }

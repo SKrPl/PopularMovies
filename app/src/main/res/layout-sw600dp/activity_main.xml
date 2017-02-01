@@ -6,14 +6,14 @@
     android:layout_height="match_parent">
 
     <fragment
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:name="com.example.siddhant.popularmovies.ui.fragment.PosterFragment"
         android:id="@+id/poster_fragment"
         android:layout_weight="1" />
 
     <FrameLayout
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="2"
         android:id="@+id/movie_detail_container"/>

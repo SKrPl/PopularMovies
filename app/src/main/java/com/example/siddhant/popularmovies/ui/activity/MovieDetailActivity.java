@@ -21,7 +21,7 @@ public class MovieDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_detail);
 
         if (savedInstanceState == null) {
-            MovieDetailFragment fragment = MovieDetailFragment.newInstance(false);
+            MovieDetailFragment fragment = MovieDetailFragment.newInstance(null, false);
             getSupportFragmentManager()
                     .beginTransaction()
                     .add(R.id.detail_fragment_container, fragment)
