@@ -6,38 +6,37 @@ import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
-import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.Toast;
 
 import com.example.siddhant.popularmovies.BuildConfig;
 import com.example.siddhant.popularmovies.MovieAdapter;
 import com.example.siddhant.popularmovies.R;
-import com.example.siddhant.popularmovies.Utility;
 import com.example.siddhant.popularmovies.api.ApiClient;
 import com.example.siddhant.popularmovies.api.MovieApiRequests;
 import com.example.siddhant.popularmovies.data.PopMoviesContract;
 import com.example.siddhant.popularmovies.models.Movie;
 import com.example.siddhant.popularmovies.models.MoviesApiResponse;
 import com.example.siddhant.popularmovies.ui.activity.MainActivity;
-import com.example.siddhant.popularmovies.ui.activity.MovieDetailActivity;
 
 import java.util.ArrayList;
 
@@ -50,34 +49,36 @@ import retrofit2.Response;
  */
 public class PosterFragment extends Fragment implements
         MovieAdapter.OnItemClickListener,
-        Toolbar.OnMenuItemClickListener,
-        LoaderManager.LoaderCallbacks<Cursor>{
+        LoaderManager.LoaderCallbacks<Cursor> {
+
+    public static final String MOVIE_PARCELABLE_KEY = "movie_parcelable";
+    public static final String SHARED_PREF_ON_CLICKED_FAVOURITE = "on_clicked_favourite";
 
     private final String LOG_TAG = PosterFragment.class.getSimpleName();
+    private static final int POSTERS_LOADER_ID = 100;
+    private final float MOVIE_POSTER_WIDTH = 160;
     private final String MOVIE_LIST_PARCELABLE_KEY = "movie_parcelable_list";
     private final String SORTING_CRITERIA = "sorting_criteria";
 
-    public static final String MOVIE_PARCELABLE_KEY = "movie_parcelable";
-    public static final String SHARED_PREF_DB_KEY = "favourites_db_key";
-    public static final int POSTERS_LOADER_ID = 100;
+    private SharedPreferences mSharedPref;
+    private Toast mToast;
 
     private MovieAdapter mMovieAdapter;
-    private ArrayList<Movie> mMovieList = new ArrayList<Movie>();
-    private String mSortingCriteria = "popular";
+    private ArrayList<Movie> mMovieList = new ArrayList<>();
     private RecyclerViewClickCallback mRecyclerViewClickCallback;
 
-    private Toolbar mToolbar;
-    private SharedPreferences mSharedPref;
+    private Call<MoviesApiResponse> mMoviesApiResponseCall;
+
+    private String mSortingCriteria = "popular";
 
     public interface RecyclerViewClickCallback {
-        public void onRecyclerViewItemSelected(Movie movie);
+        void onRecyclerViewItemSelected(Movie movie);
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mSharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        setDbValue(false);
         setHasOptionsMenu(true);
     }
 
@@ -94,16 +95,15 @@ public class PosterFragment extends Fragment implements
                              Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         View rootView = inflater.inflate(R.layout.fragment_poster, container, false);
-        mToolbar = (Toolbar) rootView.findViewById(R.id.toolbar_poster);
-        mToolbar.setTitle("Popular Movies");
-        mToolbar.setTitleTextColor(Color.WHITE);
-        mToolbar.inflateMenu(R.menu.menu_main);
-        mToolbar.setOnMenuItemClickListener(this);
+        Toolbar toolbar = (Toolbar) rootView.findViewById(R.id.toolbar);
+        toolbar.setTitle(getResources().getString(R.string.app_name));
+        ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
 
 
-        if (savedInstanceState == null) {
-            makeRequest();
-        } else {
+        if (savedInstanceState == null && !getOnClickFavouritePrefValue()) {
+            setOnClickFavouritePrefValue(false);
+            fetchMovies();
+        } else if (savedInstanceState != null){
             mMovieList = savedInstanceState.getParcelableArrayList(MOVIE_LIST_PARCELABLE_KEY);
             Log.d(LOG_TAG, "Number of movies restored from Parcel: " + mMovieList.size());
         }
@@ -117,12 +117,11 @@ public class PosterFragment extends Fragment implements
                     @Override
                     public void onGlobalLayout() {
                         int width = recyclerView.getWidth();
-
                         Resources resources = getResources();
                         int imageViewWidth = (int) TypedValue
                                 .applyDimension(
                                         TypedValue.COMPLEX_UNIT_DIP,
-                                        180,
+                                        MOVIE_POSTER_WIDTH,
                                         resources.getDisplayMetrics()
                                 );
 
@@ -130,7 +129,6 @@ public class PosterFragment extends Fragment implements
                                 new GridLayoutManager(getActivity(),
                                         width/imageViewWidth)
                         );
-
                         recyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                     }
                 });
@@ -140,41 +138,29 @@ public class PosterFragment extends Fragment implements
         return rootView;
     }
 
-    private void makeRequest() {
-        setDbValue(false);
-        final boolean twoPane = PreferenceManager.getDefaultSharedPreferences(getActivity())
-                .getBoolean(MainActivity.SHARED_PREF_IS_TWO_PANE, false);
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_main, menu);
+    }
 
-        MovieApiRequests movieApiRequests = ApiClient.getRequest(MovieApiRequests.class);
-
-        String sortingCriteria = Utility.getSortingCriteria(getActivity());
-        Call<MoviesApiResponse> call = movieApiRequests.getMovies(
-                mSortingCriteria,
-                BuildConfig.API_KEY);
-
-        call.enqueue(new Callback<MoviesApiResponse>() {
-            @Override
-            public void onResponse(
-                    Call<MoviesApiResponse> call,
-                    Response<MoviesApiResponse> response) {
-                mMovieList = response.body().getResults();
-                mMovieAdapter.setMovieList(mMovieList);
-                if (twoPane) {
-                    setOnClickListener(mMovieList.get(0));
-                }
-                Log.d(LOG_TAG, "Number of movies received: " + mMovieAdapter.getItemCount());
-            }
-
-            @Override
-            public void onFailure(Call<MoviesApiResponse> call, Throwable t) {
-                /*FragmentManager fm = getActivity().getSupportFragmentManager();
-                fm.beginTransaction()
-                        .replace(R.id.fragment_container, new NoNetworkFragment())
-                        .commit();*/
-
-                Log.e(LOG_TAG, t.toString());
-            }
-        });
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        switch (id) {
+            case R.id.main_popular:
+                mSortingCriteria = "popular";
+                fetchMovies();
+                break;
+            case R.id.main_top_rated:
+                mSortingCriteria = "top_rated";
+                fetchMovies();
+                break;
+            case R.id.main_favourite:
+                mSortingCriteria = "favourites";
+                getLoaderManager().restartLoader(POSTERS_LOADER_ID, null, this);
+                break;
+        }
+        return true;
     }
 
     @Override
@@ -190,32 +176,8 @@ public class PosterFragment extends Fragment implements
     }
 
     @Override
-    public boolean onMenuItemClick(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.main_popular:
-                mSortingCriteria = "popular";
-                makeRequest();
-                break;
-            case R.id.main_top_rated:
-                mSortingCriteria = "top_rated";
-                makeRequest();
-                break;
-            case R.id.main_favourite:
-                mSortingCriteria = "favourites";
-                getLoaderManager().restartLoader(POSTERS_LOADER_ID, null, this);
-                break;
-        }
-        return true;
-    }
-
-    private void setDbValue(boolean dbValue) {
-        mSharedPref.edit().putBoolean(SHARED_PREF_DB_KEY, dbValue).apply();
-    }
-
-    @Override
     public void onResume() {
-        boolean val = mSharedPref.getBoolean(SHARED_PREF_DB_KEY, false);
-        if (val) {
+        if (getOnClickFavouritePrefValue()) {
             getLoaderManager().restartLoader(POSTERS_LOADER_ID, null, this);
         }
         super.onResume();
@@ -231,17 +193,17 @@ public class PosterFragment extends Fragment implements
 
             @Override
             public Cursor loadInBackground() {
-                Cursor cursor = getActivity().getContentResolver().query(
+                return getActivity().getContentResolver().query(
                         PopMoviesContract.Movie.CONTENT_URI,
                         null, null, null, null);
-                return cursor;
+
             }
         };
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        setDbValue(true);
+        setOnClickFavouritePrefValue(true);
         final boolean twoPane = PreferenceManager.getDefaultSharedPreferences(getActivity())
                 .getBoolean(MainActivity.SHARED_PREF_IS_TWO_PANE, false);
         mMovieList = cursorToMovieList(data);
@@ -258,11 +220,71 @@ public class PosterFragment extends Fragment implements
         };
         handler.sendEmptyMessage(0);
 
+        if (mMovieList.size() == 0) {
+            showToastMessage(getResources().getString(R.string.no_favourite_movie));
+        }
+
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
+        mMovieAdapter.setMovieList(null);
+    }
 
+    public void initLoader() {
+        getLoaderManager().restartLoader(POSTERS_LOADER_ID, null, this);
+    }
+
+    private void fetchMovies() {
+        setOnClickFavouritePrefValue(false);
+        final boolean twoPane = PreferenceManager.getDefaultSharedPreferences(getActivity())
+                .getBoolean(MainActivity.SHARED_PREF_IS_TWO_PANE, false);
+
+        MovieApiRequests movieApiRequests = ApiClient.getRequest(MovieApiRequests.class);
+
+        if (mMoviesApiResponseCall != null) {
+            mMoviesApiResponseCall.cancel();
+        }
+
+        mMoviesApiResponseCall = movieApiRequests.getMovies(
+                mSortingCriteria,
+                BuildConfig.API_KEY);
+
+        mMoviesApiResponseCall.enqueue(new Callback<MoviesApiResponse>() {
+            @Override
+            public void onResponse(
+                    Call<MoviesApiResponse> call,
+                    Response<MoviesApiResponse> response) {
+                mMovieList = response.body().getResults();
+                mMovieAdapter.setMovieList(mMovieList);
+                if (twoPane) {
+                    setOnClickListener(mMovieList.get(0));
+                }
+                Log.d(LOG_TAG, "Number of movies received: " + mMovieAdapter.getItemCount());
+            }
+
+            @Override
+            public void onFailure(Call<MoviesApiResponse> call, Throwable t) {
+                Log.e(LOG_TAG, t.toString());
+                showToastMessage(getResources().getString(R.string.no_network_message));
+            }
+        });
+    }
+
+    private void setOnClickFavouritePrefValue(boolean prefValue) {
+        mSharedPref.edit().putBoolean(SHARED_PREF_ON_CLICKED_FAVOURITE, prefValue).apply();
+    }
+
+    private boolean getOnClickFavouritePrefValue() {
+        return mSharedPref.getBoolean(SHARED_PREF_ON_CLICKED_FAVOURITE, false);
+    }
+
+    private void showToastMessage(String toastMessage) {
+        if (mToast != null) {
+            mToast.cancel();
+        }
+        mToast = Toast.makeText(getActivity(), toastMessage, Toast.LENGTH_SHORT);
+        mToast.show();
     }
 
     private ArrayList<Movie> cursorToMovieList(Cursor cursor) {
@@ -295,9 +317,5 @@ public class PosterFragment extends Fragment implements
             movies.add(movie);
         }
         return movies;
-    }
-
-    public void initLoader() {
-        getLoaderManager().restartLoader(POSTERS_LOADER_ID, null, this);
     }
 }

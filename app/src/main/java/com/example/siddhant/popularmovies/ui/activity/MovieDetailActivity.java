@@ -28,29 +28,4 @@ public class MovieDetailActivity extends AppCompatActivity {
                     .commit();
         }
     }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.menu_detail, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int itemId = item.getItemId();
-        switch (itemId){
-            case R.id.detail_setting:
-                openSettingsActivity();
-                break;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    private boolean openSettingsActivity() {
-        Intent intent = new Intent(this, SettingsActivity.class);
-        startActivity(intent);
-        return true;
-    }
-
 }

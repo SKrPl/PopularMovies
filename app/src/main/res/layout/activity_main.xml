@@ -6,13 +6,6 @@
     android:gravity="center_vertical"
     tools:context="com.example.siddhant.popularmovies.ui.activity.MainActivity">
 
-    <!--<FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:id="@+id/fragment_container">
-    </FrameLayout>-->
     <fragment
         android:layout_width="match_parent"
         android:layout_height="match_parent"

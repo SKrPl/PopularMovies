@@ -3,22 +3,52 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 
-    <dimen name="grid_view_column_width">150dp</dimen>
-    <dimen name="grid_item_height">300dp</dimen>
-
     <dimen name="layout_padding">16dp</dimen>
-    <dimen name="layout_margin">16dp</dimen>
+    <dimen name="layout_padding_small">8dp</dimen>
+    <dimen name="layout_margin_large">16dp</dimen>
+    <dimen name="layout_margin_small">8dp</dimen>
 
     <dimen name="card_view_corner_radius">3dp</dimen>
 
-    <!-- Movie name font size in detail view-->
-    <dimen name="text_icon_size">40sp</dimen>
+    <!-- fragment_detail -->
+    <dimen name="backdrop_image_height">200dp</dimen>
+    <dimen name="poster_image_width">100dp</dimen>
+    <dimen name="poster_image_height">150dp</dimen>
+    <dimen name="poster_margin_top">184dp</dimen>
+    <dimen name="poster_margin_left">24dp</dimen>
+    <!-- relative layout for movie name, year and rating i.e nyr-->
+    <dimen name="movie_nyr_margin_top">40dp</dimen>
+    <dimen name="movie_nyr_margin_left">16dp</dimen>
+    <dimen name="movie_nyr_margin_right">16dp</dimen>
+    <dimen name="movie_name_text_size">24sp</dimen>
+    <dimen name="movie_rating_text_size">20sp</dimen>
+    <dimen name="movie_rating_total_text_size">12sp</dimen>
+    <!-- floating action button -->
+    <dimen name="movie_favourite_margin_right">24dp</dimen>
+    <dimen name="movie_favourite_margin_bottom">105dp</dimen>
+    <!-- movie videos and reviews linear layout container i.e vr-->
+    <dimen name="movie_vr_margin_top">16dp</dimen>
+    <dimen name="movie_vr_margin_left">24dp</dimen>
+    <dimen name="movie_vr_margin_right">24dp</dimen>
 
-    <dimen name="text_icon_imageview_gap">30dp</dimen>
-    <dimen name="imageview_detail_gap">30dp</dimen>
+    <!-- movie_video -->
+    <dimen name="movie_video_control">64dp</dimen>
+
+    <!-- grid_item_movie_poster -->
+    <dimen name="movie_item_name_text_size">16dp</dimen>
+    <dimen name="movie_item_poster_height">300dp</dimen>
+
+    <!-- movie_video -->
     <dimen name="divider_gap">8dp</dimen>
-    <dimen name="details_gap">10dp</dimen>
 
-    <dimen name="retry_message_and_button_gap">8dp</dimen>
+    <!-- movie_reviews -->
+    <dimen name="details_gap">16dp</dimen>
+
+    <!-- row_movie_review -->
+    <dimen name="review_content_margin_top">8dp</dimen>
+
+    <!-- activity_review-->
+    <dimen name="review_author_text_size">24sp</dimen>
+    <dimen name="review_content_text_size">16sp</dimen>
 
 </resources>

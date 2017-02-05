@@ -5,8 +5,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.example.siddhant.popularmovies.models.Movie;
 import com.squareup.picasso.Picasso;
@@ -25,6 +25,13 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MoviePosterV
 
     private ArrayList<Movie> mMovieList;
 
+    private final int ITEM_LEFT = 0;
+    private final int ITEM_RIGHT = 1;
+
+    public interface OnItemClickListener {
+        void setOnClickListener(Movie movie);
+    }
+
     public MovieAdapter(Context context,
                         ArrayList<Movie> movies,
                         OnItemClickListener itemClickListener) {
@@ -33,13 +40,10 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MoviePosterV
         mClickListener = itemClickListener;
     }
 
-    public interface OnItemClickListener {
-        public void setOnClickListener(Movie movie);
-    }
-
     class MoviePosterViewHolder extends RecyclerView.ViewHolder {
 
-        ImageView mMoviePoster;
+        private ImageView mMoviePoster;
+        private TextView mMovieName;
 
         public MoviePosterViewHolder(View itemView) {
             super(itemView);
@@ -53,27 +57,37 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MoviePosterV
                 }
             });
 
-            mMoviePoster = (ImageView) itemView.findViewById(R.id.poster);
+            mMoviePoster = (ImageView) itemView.findViewById(R.id.movie_poster);
+            mMovieName = (TextView) itemView.findViewById(R.id.movie_name);
+        }
+
+        public void bind(Movie movie) {
+            Picasso.with(mContext).load(movie.getPosterUrl()).fit().into(mMoviePoster);
+            mMovieName.setText(movie.getTitle());
         }
     }
 
     @Override
     public MoviePosterViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(mContext);
-        View view = inflater.inflate(R.layout.grid_item_movie, parent, false);
+        View view = inflater.inflate(R.layout.grid_item_movie_poster, parent, false);
         return new MoviePosterViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(MoviePosterViewHolder holder, int position) {
         Movie movie = mMovieList.get(position);
-        String posterUrl = movie.getPosterUrl();
-        Picasso.with(mContext).load(posterUrl).fit().into(holder.mMoviePoster);
+        holder.bind(movie);
     }
 
     @Override
     public int getItemCount() {
         return mMovieList.size();
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return position % 2 == 0 ? ITEM_RIGHT : ITEM_LEFT;
     }
 
     public void setMovieList(ArrayList<Movie> movies) {

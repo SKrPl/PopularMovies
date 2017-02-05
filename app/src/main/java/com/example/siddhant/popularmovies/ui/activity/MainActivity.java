@@ -16,10 +16,9 @@ public class MainActivity extends AppCompatActivity implements
         PosterFragment.RecyclerViewClickCallback,
         MovieDetailFragment.DbMovieUiUpdateListener {
 
-    private final String LOG_TAG = MainActivity.class.getSimpleName();
     public static final String SHARED_PREF_IS_TWO_PANE = "is_two_pane";
 
-    private PosterFragment mFragment;
+    private final String LOG_TAG = MainActivity.class.getSimpleName();
 
     private boolean mTwoPane;
 
@@ -27,7 +26,6 @@ public class MainActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mFragment = new PosterFragment();
 
         if (findViewById(R.id.movie_detail_container) == null) {
             mTwoPane = false;
@@ -62,13 +60,17 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    /**
+     * Used to update poster fragment in tablet layout, after a movie is removed by clicking on
+     * star icon in MovieDetailFragment.
+     */
     @Override
     public void updatePosterFragmentUi() {
         PosterFragment fragment = (PosterFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.poster_fragment);
-        boolean isDb = PreferenceManager.getDefaultSharedPreferences(this)
-                .getBoolean(PosterFragment.SHARED_PREF_DB_KEY, false);
-        if (mTwoPane && isDb) {
+        boolean isOnClickedFavouritePrefValue = PreferenceManager.getDefaultSharedPreferences(this)
+                .getBoolean(PosterFragment.SHARED_PREF_ON_CLICKED_FAVOURITE, false);
+        if (mTwoPane && isOnClickedFavouritePrefValue) {
             fragment.initLoader();
         }
     }

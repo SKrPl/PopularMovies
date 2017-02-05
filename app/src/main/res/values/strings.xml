@@ -1,28 +1,22 @@
 <resources>
-    <string name="app_name">PopularMovies</string>
+    <string name="app_name">Popular Movies</string>
 
-    <string name="content_description">Movie Poster</string>
     <string name="action_popular">Popular Movies</string>
     <string name="action_top_rated">Top Rated</string>
     <string name="action_favourite">Favourites</string>
 
-    <!-- Heading in Detail View -->
-    <string name="heading_released_on">Released</string>
-    <string name="heading_rating">Rating</string>
-    <string name="heading_plot">Plot</string>
-    <string name="action_setting">Settings</string>
+    <!-- fragment_detail -->
+    <string name="movie_rating_total">/10</string>
     <string name="heading_reviews">Reviews</string>
+    <string name="movie_backdrop_desc">Movie Backdrop</string>
+    <string name="movie_poster_desc">Movie Poster</string>
+    <!--dummy strings for display in xml preview -->
+    <string name="dummy_movie_name">Siddhant Kumar Patel</string>
+    <string name="dummy_movie_released_date">2017</string>
+    <string name="dummy_movie_rating">8.9</string>
 
-    <!-- ListPreference Values -->
-    <string name="movie_order">View Movies by</string>
-    <string name="order_key" translatable="false">sorting_order</string>
-    <string name="order_option_popularity">Popularity</string>
-    <string name="order_option_rating">Rating</string>
-    <string name="order_value_popularity" translatable="false">popular</string>
-    <string name="order_value_rating" translatable="false">top_rated</string>
-    <string name="order_value_default">popular</string>
+    <!-- PosterFragment -->
+    <string name="no_network_message">Could not fetch Movies from Internet. View your favourite movies.</string>
+    <string name="no_favourite_movie">You don\'t have any favourite movie stored!</string>
 
-    <!-- No network fragment values -->
-    <string name="retry">Retry</string>
-    <string name="retry_message">Check your connection and try again.</string>
 </resources>

@@ -3,8 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:title="@string/action_setting"
+        android:title="Share"
         app:showAsAction="never"
-        android:id="@+id/detail_setting"
-        android:orderInCategory="200" />
+        android:id="@+id/share"
+        android:actionProviderClass="android.widget.ShareActionProvider"/>
+
 </menu>

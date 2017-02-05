@@ -4,9 +4,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="@dimen/details_gap"
-    android:layout_marginLeft="@dimen/layout_margin"
-    android:layout_marginRight="@dimen/layout_margin"
+    android:id="@+id/video_card_view"
+    android:layout_marginTop="@dimen/layout_margin_large"
     card_view:cardUseCompatPadding="true"
     card_view:cardCornerRadius="@dimen/card_view_corner_radius">
 
@@ -20,11 +19,10 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/num_videos"
+            android:id="@+id/movie_videos_num"
             android:gravity="center"
             android:textAppearance="?android:textAppearanceMedium"
-            android:textColor="@color/textColorPrimary"
-            android:text="Videos: 1/2"/>
+            android:textColor="@color/textColorPrimary" />
 
         <View
             android:layout_width="match_parent"
@@ -40,10 +38,11 @@
             android:id="@+id/video_contents">
 
             <ImageButton
-                android:layout_width="64dp"
-                android:layout_height="64dp"
+                android:layout_width="@dimen/movie_video_control"
+                android:layout_height="@dimen/movie_video_control"
                 android:id="@+id/video_previous"
-                app:srcCompat="@drawable/ic_video_previous"/>
+                app:srcCompat="@drawable/ic_video_previous"
+                android:background="@android:color/transparent"/>
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -52,28 +51,30 @@
                 android:id="@+id/video_intent">
 
                 <ImageView
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:id="@+id/play"
+                    android:layout_width="@dimen/movie_video_control"
+                    android:layout_height="@dimen/movie_video_control"
                     app:srcCompat="@drawable/ic_play"/>
 
+                <!--Video Name-->
                 <TextView
                     android:layout_width="wrap_content"
-                    android:layout_height="64dp"
+                    android:layout_height="@dimen/movie_video_control"
                     android:layout_weight="1"
                     android:id="@+id/video_title"
-                    android:ellipsize="end"
                     android:gravity="center_vertical"
                     android:textAppearance="?android:textAppearanceMedium"
+                    android:textColor="@color/textColorSecondary"
+                    android:ellipsize="end"
                     android:maxLines="2"/>
 
             </LinearLayout>
 
             <ImageButton
-                android:layout_width="64dp"
-                android:layout_height="64dp"
+                android:layout_width="@dimen/movie_video_control"
+                android:layout_height="@dimen/movie_video_control"
                 android:id="@+id/video_next"
-                app:srcCompat="@drawable/ic_video_next"/>
+                app:srcCompat="@drawable/ic_video_next"
+                android:background="@android:color/transparent"/>
 
         </LinearLayout>
 
