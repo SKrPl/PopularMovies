@@ -4,6 +4,7 @@ package com.example.siddhant.popularmovies.ui.fragment;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.content.res.Resources;
@@ -55,6 +56,7 @@ public class PosterFragment extends Fragment implements
     public static final String SHARED_PREF_ON_CLICKED_FAVOURITE = "on_clicked_favourite";
 
     private final String LOG_TAG = PosterFragment.class.getSimpleName();
+    private final String SAVED_SCROLL_STATE = "scroll_state";
     private static final int POSTERS_LOADER_ID = 100;
     private final float MOVIE_POSTER_WIDTH = 160;
     private final String MOVIE_LIST_PARCELABLE_KEY = "movie_parcelable_list";
@@ -62,6 +64,9 @@ public class PosterFragment extends Fragment implements
 
     private SharedPreferences mSharedPref;
     private Toast mToast;
+    private RecyclerView mRecyclerView;
+    private GridLayoutManager layoutManager;
+    private Parcelable recyclerViewSavedScrollState;
 
     private MovieAdapter mMovieAdapter;
     private ArrayList<Movie> mMovieList = new ArrayList<>();
@@ -70,6 +75,7 @@ public class PosterFragment extends Fragment implements
     private Call<MoviesApiResponse> mMoviesApiResponseCall;
 
     private String mSortingCriteria = "popular";
+    private int savedScrollState = 0;
 
     public interface RecyclerViewClickCallback {
         void onRecyclerViewItemSelected(Movie movie);
@@ -99,6 +105,9 @@ public class PosterFragment extends Fragment implements
         toolbar.setTitle(getResources().getString(R.string.app_name));
         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
 
+        mRecyclerView = (RecyclerView) rootView
+                .findViewById(R.id.poster_container);
+
 
         if (savedInstanceState == null && !getOnClickFavouritePrefValue()) {
             setOnClickFavouritePrefValue(false);
@@ -106,17 +115,16 @@ public class PosterFragment extends Fragment implements
         } else if (savedInstanceState != null){
             mMovieList = savedInstanceState.getParcelableArrayList(MOVIE_LIST_PARCELABLE_KEY);
             Log.d(LOG_TAG, "Number of movies restored from Parcel: " + mMovieList.size());
+            recyclerViewSavedScrollState = savedInstanceState.getParcelable(SAVED_SCROLL_STATE);
+
         }
 
         mMovieAdapter = new MovieAdapter(getActivity(), mMovieList, this);
-        final RecyclerView recyclerView = (RecyclerView) rootView
-                .findViewById(R.id.poster_container);
-
         rootView.getViewTreeObserver().addOnGlobalLayoutListener(
                 new ViewTreeObserver.OnGlobalLayoutListener() {
                     @Override
                     public void onGlobalLayout() {
-                        int width = recyclerView.getWidth();
+                        int width = mRecyclerView.getWidth();
                         Resources resources = getResources();
                         int imageViewWidth = (int) TypedValue
                                 .applyDimension(
@@ -125,15 +133,15 @@ public class PosterFragment extends Fragment implements
                                         resources.getDisplayMetrics()
                                 );
 
-                        recyclerView.setLayoutManager(
-                                new GridLayoutManager(getActivity(),
-                                        width/imageViewWidth)
-                        );
-                        recyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        layoutManager = new GridLayoutManager(getActivity(), width/imageViewWidth);
+                        mRecyclerView.setLayoutManager(layoutManager);
+                        mRecyclerView.setAdapter(mMovieAdapter);
+                        if (recyclerViewSavedScrollState != null) {
+                            layoutManager.onRestoreInstanceState(recyclerViewSavedScrollState);
+                        }
+                        mRecyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                     }
                 });
-
-        recyclerView.setAdapter(mMovieAdapter);
 
         return rootView;
     }
@@ -167,7 +175,8 @@ public class PosterFragment extends Fragment implements
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putParcelableArrayList(MOVIE_LIST_PARCELABLE_KEY, mMovieAdapter.getMovieList());
-        outState.putString(SORTING_CRITERIA,mSortingCriteria);
+        outState.putString(SORTING_CRITERIA, mSortingCriteria);
+        outState.putParcelable(SAVED_SCROLL_STATE, layoutManager.onSaveInstanceState());
     }
 
     @Override
