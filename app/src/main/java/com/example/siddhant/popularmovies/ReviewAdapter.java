@@ -11,6 +11,10 @@ import com.example.siddhant.popularmovies.models.Review;
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+
 /**
  * Created by siddhant on 2/4/17.
  */
@@ -52,20 +56,18 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewView
 
     public final class ReviewViewHolder extends RecyclerView.ViewHolder {
 
-        private TextView mAuthor;
-        private TextView mContent;
+        @BindView(R.id.review_author) TextView mAuthor;
+        @BindView(R.id.review_content) TextView mContent;
 
         public ReviewViewHolder(View itemView) {
             super(itemView);
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    int position = getLayoutPosition();
-                    mClickListener.onClick(mReviewList.get(position));
-                }
-            });
-            mAuthor = (TextView) itemView.findViewById(R.id.author);
-            mContent = (TextView) itemView.findViewById(R.id.content);
+            ButterKnife.bind(this, itemView);
+        }
+
+        @OnClick(R.id.row_movie_review)
+        public void onReviewRowClick() {
+            int position = getLayoutPosition();
+            mClickListener.onClick(mReviewList.get(position));
         }
 
         public void bind(Review review) {

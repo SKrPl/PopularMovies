@@ -11,9 +11,17 @@ import com.example.siddhant.popularmovies.R;
 import com.example.siddhant.popularmovies.models.Review;
 import com.example.siddhant.popularmovies.ui.fragment.MovieDetailFragment;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+
 public class ReviewActivity extends AppCompatActivity {
 
     private final String REVIEW_PARCELABLE_SAVED = "review_saved";
+
+    @BindView(R.id.toolbar) Toolbar toolbar;
+    @BindView(R.id.review_item_author) TextView author;
+    @BindView(R.id.review_item_content) TextView content;
 
     private Review mReview;
 
@@ -21,10 +29,9 @@ public class ReviewActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_review);
-
+        ButterKnife.bind(this);
         Intent intent = getIntent();
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         String title = "Review of " + intent.getStringExtra(MovieDetailFragment.MOVIE_NAME);
         toolbar.setTitle(title);
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
@@ -41,9 +48,7 @@ public class ReviewActivity extends AppCompatActivity {
             mReview = savedInstanceState.getParcelable(REVIEW_PARCELABLE_SAVED);
         }
 
-        TextView author = (TextView) findViewById(R.id.review_item_author);
         author.setText(mReview.getAuthor());
-        TextView content = (TextView) findViewById(R.id.review_item_content);
         content.setText(mReview.getContent());
     }
 
