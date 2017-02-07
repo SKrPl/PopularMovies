@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:id="@+id/row_movie_review"
     android:layout_marginTop="@dimen/layout_margin_large">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/author"
+        android:id="@+id/review_author"
         android:textAppearance="?android:textAppearanceSmall"
         android:textColor="@color/textColorPrimary"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/content"
+        android:id="@+id/review_content"
         android:textAppearance="?android:textAppearanceSmall"
         android:layout_marginTop="@dimen/review_content_margin_top"
         android:ellipsize="end"

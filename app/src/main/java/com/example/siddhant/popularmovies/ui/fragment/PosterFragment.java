@@ -41,6 +41,9 @@ import com.example.siddhant.popularmovies.ui.activity.MainActivity;
 
 import java.util.ArrayList;
 
+import butterknife.BindString;
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -62,9 +65,11 @@ public class PosterFragment extends Fragment implements
     private final String MOVIE_LIST_PARCELABLE_KEY = "movie_parcelable_list";
     private final String SORTING_CRITERIA = "sorting_criteria";
 
+    @BindView(R.id.poster_container) RecyclerView recyclerView;
+    @BindView(R.id.toolbar) Toolbar toolbar;
+
     private SharedPreferences mSharedPref;
     private Toast mToast;
-    private RecyclerView mRecyclerView;
     private GridLayoutManager layoutManager;
     private Parcelable recyclerViewSavedScrollState;
 
@@ -73,6 +78,10 @@ public class PosterFragment extends Fragment implements
     private RecyclerViewClickCallback mRecyclerViewClickCallback;
 
     private Call<MoviesApiResponse> mMoviesApiResponseCall;
+
+    @BindString(R.string.app_name) String appName;
+    @BindString(R.string.no_favourite_movie) String noFavouriteMovie;
+    @BindString(R.string.no_network_message) String noNetworkMessage;
 
     private String mSortingCriteria = "popular";
     private int savedScrollState = 0;
@@ -101,13 +110,10 @@ public class PosterFragment extends Fragment implements
                              Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         View rootView = inflater.inflate(R.layout.fragment_poster, container, false);
-        Toolbar toolbar = (Toolbar) rootView.findViewById(R.id.toolbar);
-        toolbar.setTitle(getResources().getString(R.string.app_name));
+        ButterKnife.bind(this, rootView);
+
+        toolbar.setTitle(appName);
         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
-
-        mRecyclerView = (RecyclerView) rootView
-                .findViewById(R.id.poster_container);
-
 
         if (savedInstanceState == null && !getOnClickFavouritePrefValue()) {
             setOnClickFavouritePrefValue(false);
@@ -124,7 +130,7 @@ public class PosterFragment extends Fragment implements
                 new ViewTreeObserver.OnGlobalLayoutListener() {
                     @Override
                     public void onGlobalLayout() {
-                        int width = mRecyclerView.getWidth();
+                        int width = recyclerView.getWidth();
                         Resources resources = getResources();
                         int imageViewWidth = (int) TypedValue
                                 .applyDimension(
@@ -134,12 +140,13 @@ public class PosterFragment extends Fragment implements
                                 );
 
                         layoutManager = new GridLayoutManager(getActivity(), width/imageViewWidth);
-                        mRecyclerView.setLayoutManager(layoutManager);
-                        mRecyclerView.setAdapter(mMovieAdapter);
+                        recyclerView.setLayoutManager(layoutManager);
+                        recyclerView.setAdapter(mMovieAdapter);
                         if (recyclerViewSavedScrollState != null) {
                             layoutManager.onRestoreInstanceState(recyclerViewSavedScrollState);
                         }
-                        mRecyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+
+                        recyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                     }
                 });
 
@@ -230,7 +237,7 @@ public class PosterFragment extends Fragment implements
         handler.sendEmptyMessage(0);
 
         if (mMovieList.size() == 0) {
-            showToastMessage(getResources().getString(R.string.no_favourite_movie));
+            showToastMessage(noFavouriteMovie);
         }
 
     }
@@ -275,7 +282,7 @@ public class PosterFragment extends Fragment implements
             @Override
             public void onFailure(Call<MoviesApiResponse> call, Throwable t) {
                 Log.e(LOG_TAG, t.toString());
-                showToastMessage(getResources().getString(R.string.no_network_message));
+                showToastMessage(noNetworkMessage);
             }
         });
     }
@@ -302,9 +309,11 @@ public class PosterFragment extends Fragment implements
         int idColIndex = cursor.getColumnIndex(PopMoviesContract.Movie._ID);
         int posterUrlColIndex = cursor.getColumnIndex(PopMoviesContract.Movie.COLUMN_POSTER_URL);
         int overviewColIndex = cursor.getColumnIndex(PopMoviesContract.Movie.COLUMN_OVERVIEW);
-        int releaseDateColIndex = cursor.getColumnIndex(PopMoviesContract.Movie.COLUMN_RELEASE_DATE);
+        int releaseDateColIndex = cursor
+                .getColumnIndex(PopMoviesContract.Movie.COLUMN_RELEASE_DATE);
         int titleColIndex = cursor.getColumnIndex(PopMoviesContract.Movie.COLUMN_TITLE);
-        int backdropUrlColIndex = cursor.getColumnIndex(PopMoviesContract.Movie.COLUMN_BACKDROP_URL);
+        int backdropUrlColIndex = cursor
+                .getColumnIndex(PopMoviesContract.Movie.COLUMN_BACKDROP_URL);
         int ratingColIndex = cursor.getColumnIndex(PopMoviesContract.Movie.COLUMN_RATING);
 
         while (cursor.moveToNext()) {

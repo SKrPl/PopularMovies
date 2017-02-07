@@ -19,4 +19,8 @@
     <string name="no_network_message">Could not fetch Movies from Internet. View your favourite movies.</string>
     <string name="no_favourite_movie">You don\'t have any favourite movie stored!</string>
 
+    <!-- MovieDetailFragment -->
+    <string name="no_videos_available">No videos available</string>
+    <string name="no_reviews_available">No reviews available</string>
+
 </resources>

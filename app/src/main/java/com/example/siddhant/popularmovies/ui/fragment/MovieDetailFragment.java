@@ -49,6 +49,10 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.BindString;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -74,27 +78,28 @@ public class MovieDetailFragment extends Fragment implements
 
     private ShareActionProvider mShareActionProvider;
 
-    private ImageView mMovieBackdrop;
-    private ImageView mMoviePoster;
-    private TextView mMovieName;
-    private TextView mReleaseDate;
-    private TextView mRating;
-    private TextView mPlot;
+    @BindView(R.id.toolbar) Toolbar toolbar;
+    @BindView(R.id.movie_backdrop) ImageView movieBackdrop;
+    @BindView(R.id.movie_poster) ImageView moviePoster;
+    @BindView(R.id.movie_name) TextView movieName;
+    @BindView(R.id.movie_release_date) TextView movieReleaseDate;
+    @BindView(R.id.movie_rating) TextView movieRating;
+    @BindView(R.id.movie_plot) TextView moviePlot;
 
-    private CardView mVideoCardView;
-    private TextView mNumVideos;
-    private LinearLayout mVideoContents;
-    private ImageButton mVideoPrevious;
-    private ImageButton mVideoNext;
-    private LinearLayout mVideoIntent;
-    private TextView mVideoTitle;
-    private View mVideoDivider;
+    @BindView(R.id.video_card_view) CardView videoCardView;
+    @BindView(R.id.movie_videos_num) TextView numVideosTextView;
+    @BindView(R.id.video_divider) View videoDivider;
+    @BindView(R.id.video_contents) LinearLayout videoContents;
+    @BindView(R.id.video_previous) ImageButton videoPrevious;
+    @BindView(R.id.video_intent) LinearLayout videoIntent;
+    @BindView(R.id.video_title) TextView videoTitle;
+    @BindView(R.id.video_next) ImageButton videoNext;
 
-    private CardView mReviewCardView;
-    private TextView mReviewHeading;
-    private RecyclerView mReviewRecyclerView;
+    @BindView(R.id.review_card_view) CardView reviewCardView;
+    @BindView(R.id.review_heading) TextView reviewHeading;
+    @BindView(R.id.review_list) RecyclerView reviewRecyclerView;
 
-    private FloatingActionButton mMovieFavourite;
+    @BindView(R.id.movie_favourite) FloatingActionButton movieFavourite;
 
     private Cursor mVideoCursor;
     private Cursor mReviewCursor;
@@ -105,6 +110,8 @@ public class MovieDetailFragment extends Fragment implements
     private ReviewAdapter mReviewAdapter;
     private DbMovieUiUpdateListener mDbMovieUiUpdateListener;
 
+    @BindString(R.string.no_videos_available) String noVideo;
+    @BindString(R.string.no_reviews_available) String  noReviews;
 
     private boolean mTwoPane;
     private boolean mFirstTimeLoaderUse = true;
@@ -145,12 +152,12 @@ public class MovieDetailFragment extends Fragment implements
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(
+            LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
+        ButterKnife.bind(this, rootView);
 
-        Toolbar toolbar = (Toolbar) rootView.findViewById(R.id.toolbar);
         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
-
         if (!mTwoPane) {
             toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
             toolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -161,33 +168,8 @@ public class MovieDetailFragment extends Fragment implements
             });
         }
 
-        mMovieBackdrop = (ImageView) rootView.findViewById(R.id.movie_backdrop);
-        mMoviePoster = (ImageView) rootView.findViewById(R.id.movie_poster);
-
-        mMovieName = (TextView) rootView.findViewById(R.id.movie_name);
-        mReleaseDate = (TextView) rootView.findViewById(R.id.movie_release_date);
-        mRating = (TextView) rootView.findViewById(R.id.movie_rating);
-
-        mPlot = (TextView) rootView.findViewById(R.id.movie_plot);
-
-        mVideoCardView = (CardView) rootView.findViewById(R.id.video_card_view);
-        mNumVideos = (TextView) rootView.findViewById(R.id.movie_videos_num);
-        mVideoContents = (LinearLayout) rootView.findViewById(R.id.video_contents);
-        mVideoTitle = (TextView) rootView.findViewById(R.id.video_title);
-        mVideoDivider = rootView.findViewById(R.id.video_divider);
-        mVideoIntent = (LinearLayout) rootView.findViewById(R.id.video_intent);
-        mVideoPrevious = (ImageButton) rootView.findViewById(R.id.video_previous);
-        mVideoNext = (ImageButton) rootView.findViewById(R.id.video_next);
-
-        mReviewCardView = (CardView) rootView.findViewById(R.id.review_card_view);
-        mReviewHeading = (TextView) rootView.findViewById(R.id.review_heading);
-        mReviewRecyclerView = (RecyclerView) rootView.findViewById(R.id.review_list);
-
-        mMovieFavourite = (FloatingActionButton)
-                rootView.findViewById(R.id.movie_favourite);
-
-        mVideoCardView.setVisibility(View.GONE);
-        mReviewCardView.setVisibility(View.GONE);
+        videoCardView.setVisibility(View.GONE);
+        reviewCardView.setVisibility(View.GONE);
 
         SharedPreferences sharedefPref = PreferenceManager
                 .getDefaultSharedPreferences(getActivity());
@@ -218,7 +200,7 @@ public class MovieDetailFragment extends Fragment implements
             int movieIdColIndex = cursor.getColumnIndex(PopMoviesContract.Movie._ID);
             cursor.moveToFirst();
             if (cursor.getInt(movieIdColIndex) == mMovie.getId()) {
-                mMovieFavourite.setImageResource(R.drawable.ic_star_yellow);
+                movieFavourite.setImageResource(R.drawable.ic_star_yellow);
                 mMovieInDb = true;
             }
         } catch (Exception e) {
@@ -233,8 +215,8 @@ public class MovieDetailFragment extends Fragment implements
             getReviews();
         } else if (savedInstanceState != null) {
             mMovie = savedInstanceState.getParcelable(MOVIE_PARCELABLE_SAVED);
-            mVideoCardView.setVisibility(View.VISIBLE);
-            mReviewCardView.setVisibility(View.VISIBLE);
+            videoCardView.setVisibility(View.VISIBLE);
+            reviewCardView.setVisibility(View.VISIBLE);
 
             mVideoList = savedInstanceState.getParcelableArrayList(VIDEOS_PARCELABLE_SAVED);
             Log.d(LOG_TAG, "Number of videos restored from Parcel: " + mVideoList.size());
@@ -252,86 +234,78 @@ public class MovieDetailFragment extends Fragment implements
         }
 
         mReviewAdapter = new ReviewAdapter(mReviewList, this);
-        mReviewRecyclerView.setAdapter(mReviewAdapter);
-        mReviewRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        reviewRecyclerView.setAdapter(mReviewAdapter);
+        reviewRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         String backdropUrl = mMovie.getBackdropUrl();
-        Picasso.with(getActivity()).load(backdropUrl).fit().into(mMovieBackdrop);
+        Picasso.with(getActivity()).load(backdropUrl).fit().into(movieBackdrop);
 
         String posterUrl = mMovie.getPosterUrl();
-        Picasso.with(getActivity()).load(posterUrl).fit().into(mMoviePoster);
+        Picasso.with(getActivity()).load(posterUrl).fit().into(moviePoster);
 
-        mMovieName.setText(mMovie.getTitle());
+        movieName.setText(mMovie.getTitle());
 
         String mReleaseDate = mMovie.getReleaseDate();
-        this.mReleaseDate.setText(mReleaseDate);
+        this.movieReleaseDate.setText(mReleaseDate);
 
         String mRating = String.valueOf(mMovie.getVoteAverage());
-        this.mRating.setText(mRating);
+        this.movieRating.setText(mRating);
 
         String mPlot = mMovie.getOverview();
-        this.mPlot.setText(mPlot);
-
-        mVideoIntent.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Video video = mVideoList.get(mCurrentVideo);
-                String youtubeUrl = "https://www.youtube.com/watch?v=" + video.getKey();
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(youtubeUrl));
-                startActivity(intent);
-            }
-        });
-
-        mVideoPrevious.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mCurrentVideo--;
-                mVideoTitle.setText(mVideoList.get(mCurrentVideo).getName());
-                mNumVideos.setText(
-                        "Video: " + String.valueOf(mCurrentVideo + 1) + "/" + mVideoList.size()
-                );
-
-                if (mCurrentVideo == 0) {
-                    mVideoPrevious.setVisibility(View.GONE);
-                }
-                if (mCurrentVideo + 1 < mVideoList.size() && mVideoNext.getVisibility() == View.GONE) {
-                    mVideoNext.setVisibility(View.VISIBLE);
-                }
-            }
-        });
-
-        mVideoNext.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mCurrentVideo++;
-                mVideoTitle.setText(mVideoList.get(mCurrentVideo).getName());
-                mNumVideos.setText(
-                        "Video: " + String.valueOf(mCurrentVideo + 1) + "/" + mVideoList.size()
-                );
-
-                if (mCurrentVideo + 1 == mVideoList.size()) {
-                    mVideoNext.setVisibility(View.GONE);
-                }
-                if (mCurrentVideo > 0 && mVideoPrevious.getVisibility() == View.GONE) {
-                    mVideoPrevious.setVisibility(View.VISIBLE);
-                }
-            }
-        });
-
-        mMovieFavourite.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ContentResolver resolver = getActivity().getContentResolver();
-
-                if (!mMovieInDb) {
-                    addMovieToDatabase(resolver);
-                } else {
-                    removeMovieFromDatabase(resolver);
-                }
-            }
-        });
+        this.moviePlot.setText(mPlot);
 
         return rootView;
+    }
+
+    @OnClick(R.id.video_intent)
+    public void onVideoPlayLayoutClick() {
+        Video video = mVideoList.get(mCurrentVideo);
+        String youtubeUrl = "https://www.youtube.com/watch?v=" + video.getKey();
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(youtubeUrl));
+        startActivity(intent);
+    }
+
+    @OnClick(R.id.video_previous)
+    public void onVideoPreviousClick() {
+        mCurrentVideo--;
+        videoTitle.setText(mVideoList.get(mCurrentVideo).getName());
+        numVideosTextView.setText(
+                "Video: " + String.valueOf(mCurrentVideo + 1) + "/" + mVideoList.size()
+        );
+
+        if (mCurrentVideo == 0) {
+            videoPrevious.setVisibility(View.GONE);
+        }
+        if (mCurrentVideo + 1 < mVideoList.size() && videoNext.getVisibility() == View.GONE) {
+            videoNext.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @OnClick(R.id.video_next)
+    public void onVideoNextClick() {
+        mCurrentVideo++;
+        videoTitle.setText(mVideoList.get(mCurrentVideo).getName());
+        numVideosTextView.setText(
+                "Video: " + String.valueOf(mCurrentVideo + 1) + "/" + mVideoList.size()
+        );
+
+        if (mCurrentVideo + 1 == mVideoList.size()) {
+            videoNext.setVisibility(View.GONE);
+        }
+        if (mCurrentVideo > 0 && videoPrevious.getVisibility() == View.GONE) {
+            videoPrevious.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @OnClick(R.id.movie_favourite)
+    public void onMovieFavouriteClick() {
+        ContentResolver resolver = getActivity().getContentResolver();
+
+        if (!mMovieInDb) {
+            addMovieToDatabase(resolver);
+        } else {
+            removeMovieFromDatabase(resolver);
+        }
     }
 
     @Override
@@ -382,7 +356,7 @@ public class MovieDetailFragment extends Fragment implements
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         boolean hasData = mVideoCursor.moveToFirst();
-        mVideoCardView.setVisibility(View.VISIBLE);
+        videoCardView.setVisibility(View.VISIBLE);
         if (hasData) {
             mVideoList = cursorToVideoList(mVideoCursor);
             inflateVideos();
@@ -390,7 +364,7 @@ public class MovieDetailFragment extends Fragment implements
             setNoVideos();
         }
 
-        mReviewCardView.setVisibility(View.VISIBLE);
+        reviewCardView.setVisibility(View.VISIBLE);
         hasData = mReviewCursor.moveToFirst();
         if (hasData) {
             mReviewList = cursorToReviewArrayList(mReviewCursor);
@@ -424,7 +398,7 @@ public class MovieDetailFragment extends Fragment implements
             );
         }
 
-        mMovieFavourite.setImageResource(R.drawable.ic_star_yellow);
+        movieFavourite.setImageResource(R.drawable.ic_star_yellow);
 
         Toast.makeText(
                 getActivity(),
@@ -460,7 +434,7 @@ public class MovieDetailFragment extends Fragment implements
                 mMovie.getTitle() + " removed from favourite.",
                 Toast.LENGTH_SHORT).show();
 
-        mMovieFavourite.setImageResource(R.drawable.ic_star_white);
+        movieFavourite.setImageResource(R.drawable.ic_star_white);
 
         if (mTwoPane) {
             mDbMovieUiUpdateListener.updatePosterFragmentUi();
@@ -504,7 +478,7 @@ public class MovieDetailFragment extends Fragment implements
             public void onResponse(
                     Call<VideoApiResponse> call,
                     Response<VideoApiResponse> response) {
-                mVideoCardView.setVisibility(View.VISIBLE);
+                videoCardView.setVisibility(View.VISIBLE);
                 mVideoList = response.body().getResults();
                 if (mVideoList.size() == 0) {
                     setNoVideos();
@@ -522,22 +496,22 @@ public class MovieDetailFragment extends Fragment implements
     }
 
     private void setNoVideos() {
-        mNumVideos.setText("No videos available");
-        mVideoContents.setVisibility(View.GONE);
-        mVideoDivider.setVisibility(View.GONE);
+        numVideosTextView.setText(noVideo);
+        videoContents.setVisibility(View.GONE);
+        videoDivider.setVisibility(View.GONE);
     }
 
     private void inflateVideos() {
-        mNumVideos.setText(
+        numVideosTextView.setText(
                 "Video: " + String.valueOf(mCurrentVideo + 1) + "/" + mVideoList.size()
         );
-        mVideoTitle.setText(mVideoList.get(0).getName());
+        videoTitle.setText(mVideoList.get(0).getName());
 
         if (mVideoList.size() == 1) {
-            mVideoPrevious.setVisibility(View.GONE);
-            mVideoNext.setVisibility(View.GONE);
+            videoPrevious.setVisibility(View.GONE);
+            videoNext.setVisibility(View.GONE);
         } else {
-            mVideoPrevious.setVisibility(View.GONE);
+            videoPrevious.setVisibility(View.GONE);
         }
     }
 
@@ -550,7 +524,7 @@ public class MovieDetailFragment extends Fragment implements
             public void onResponse(
                     Call<ReviewApiResponse> call,
                     Response<ReviewApiResponse> response) {
-                mReviewCardView.setVisibility(View.VISIBLE);
+                reviewCardView.setVisibility(View.VISIBLE);
                 mReviewList = response.body().getResults();
                 if (mReviewList.size() == 0) {
                     setNoReviews();
@@ -568,7 +542,7 @@ public class MovieDetailFragment extends Fragment implements
     }
 
     private void setNoReviews() {
-        mReviewHeading.setText("No reviews available");
+        reviewHeading.setText(noReviews);
     }
 
     private ArrayList<Video> cursorToVideoList(Cursor cursor) {
