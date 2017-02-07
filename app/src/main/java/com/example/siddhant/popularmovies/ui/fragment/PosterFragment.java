@@ -199,58 +199,6 @@ public class PosterFragment extends Fragment implements
         super.onResume();
     }
 
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(getActivity()){
-            @Override
-            protected void onStartLoading() {
-                super.onStartLoading();
-            }
-
-            @Override
-            public Cursor loadInBackground() {
-                return getActivity().getContentResolver().query(
-                        PopMoviesContract.Movie.CONTENT_URI,
-                        null, null, null, null);
-
-            }
-        };
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        setOnClickFavouritePrefValue(true);
-        final boolean twoPane = PreferenceManager.getDefaultSharedPreferences(getActivity())
-                .getBoolean(MainActivity.SHARED_PREF_IS_TWO_PANE, false);
-        mMovieList = cursorToMovieList(data);
-        mMovieAdapter.setMovieList(mMovieList);
-
-        Handler handler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                if (twoPane && mMovieList.size() != 0) {
-                    setOnClickListener(mMovieList.get(0));
-                }
-                super.handleMessage(msg);
-            }
-        };
-        handler.sendEmptyMessage(0);
-
-        if (mMovieList.size() == 0) {
-            showToastMessage(noFavouriteMovie);
-        }
-
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        mMovieAdapter.setMovieList(null);
-    }
-
-    public void initLoader() {
-        getLoaderManager().restartLoader(POSTERS_LOADER_ID, null, this);
-    }
-
     private void fetchMovies() {
         setOnClickFavouritePrefValue(false);
         final boolean twoPane = PreferenceManager.getDefaultSharedPreferences(getActivity())
@@ -301,6 +249,58 @@ public class PosterFragment extends Fragment implements
         }
         mToast = Toast.makeText(getActivity(), toastMessage, Toast.LENGTH_SHORT);
         mToast.show();
+    }
+
+    public void initLoader() {
+        getLoaderManager().restartLoader(POSTERS_LOADER_ID, null, this);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new CursorLoader(getActivity()){
+            @Override
+            protected void onStartLoading() {
+                super.onStartLoading();
+            }
+
+            @Override
+            public Cursor loadInBackground() {
+                return getActivity().getContentResolver().query(
+                        PopMoviesContract.Movie.CONTENT_URI,
+                        null, null, null, null);
+
+            }
+        };
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        setOnClickFavouritePrefValue(true);
+        final boolean twoPane = PreferenceManager.getDefaultSharedPreferences(getActivity())
+                .getBoolean(MainActivity.SHARED_PREF_IS_TWO_PANE, false);
+        mMovieList = cursorToMovieList(data);
+        mMovieAdapter.setMovieList(mMovieList);
+
+        Handler handler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                if (twoPane && mMovieList.size() != 0) {
+                    setOnClickListener(mMovieList.get(0));
+                }
+                super.handleMessage(msg);
+            }
+        };
+        handler.sendEmptyMessage(0);
+
+        if (mMovieList.size() == 0) {
+            showToastMessage(noFavouriteMovie);
+        }
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mMovieAdapter.setMovieList(null);
     }
 
     private ArrayList<Movie> cursorToMovieList(Cursor cursor) {

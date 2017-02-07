@@ -16,19 +16,23 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ShareActionProvider;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -71,6 +75,8 @@ public class MovieDetailFragment extends Fragment implements
     private final String MOVIE_PARCELABLE_SAVED = "movie_parcel";
     private final String VIDEOS_PARCELABLE_SAVED = "videos_parcel";
     private final String REVIEWS_PARCELABLE_SAVED = "reviews_parcel";
+    private final String YOUTUBE_BASE_URL = "https://www.youtube.com/watch?v=";
+    private final String MOVIE_DETAIL_SHARE_STRING = "share_string";
     private final int MOVIE_DETAIL_LOADER_ID = 200;
 
     private static final String IS_TWO_PANE = "two_pane";
@@ -112,11 +118,13 @@ public class MovieDetailFragment extends Fragment implements
 
     @BindString(R.string.no_videos_available) String noVideo;
     @BindString(R.string.no_reviews_available) String  noReviews;
+    @BindString(R.string.movie_detail_share) String movieDetailShare;
 
     private boolean mTwoPane;
     private boolean mFirstTimeLoaderUse = true;
     private boolean mMovieInDb = false;
     private int mCurrentVideo = 0;
+    private String mShareString;
 
     public interface DbMovieUiUpdateListener {
         void updatePosterFragmentUi();
@@ -233,6 +241,8 @@ public class MovieDetailFragment extends Fragment implements
             }
         }
 
+        createShareString();
+
         mReviewAdapter = new ReviewAdapter(mReviewList, this);
         reviewRecyclerView.setAdapter(mReviewAdapter);
         reviewRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -257,57 +267,6 @@ public class MovieDetailFragment extends Fragment implements
         return rootView;
     }
 
-    @OnClick(R.id.video_intent)
-    public void onVideoPlayLayoutClick() {
-        Video video = mVideoList.get(mCurrentVideo);
-        String youtubeUrl = "https://www.youtube.com/watch?v=" + video.getKey();
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(youtubeUrl));
-        startActivity(intent);
-    }
-
-    @OnClick(R.id.video_previous)
-    public void onVideoPreviousClick() {
-        mCurrentVideo--;
-        videoTitle.setText(mVideoList.get(mCurrentVideo).getName());
-        numVideosTextView.setText(
-                "Video: " + String.valueOf(mCurrentVideo + 1) + "/" + mVideoList.size()
-        );
-
-        if (mCurrentVideo == 0) {
-            videoPrevious.setVisibility(View.GONE);
-        }
-        if (mCurrentVideo + 1 < mVideoList.size() && videoNext.getVisibility() == View.GONE) {
-            videoNext.setVisibility(View.VISIBLE);
-        }
-    }
-
-    @OnClick(R.id.video_next)
-    public void onVideoNextClick() {
-        mCurrentVideo++;
-        videoTitle.setText(mVideoList.get(mCurrentVideo).getName());
-        numVideosTextView.setText(
-                "Video: " + String.valueOf(mCurrentVideo + 1) + "/" + mVideoList.size()
-        );
-
-        if (mCurrentVideo + 1 == mVideoList.size()) {
-            videoNext.setVisibility(View.GONE);
-        }
-        if (mCurrentVideo > 0 && videoPrevious.getVisibility() == View.GONE) {
-            videoPrevious.setVisibility(View.VISIBLE);
-        }
-    }
-
-    @OnClick(R.id.movie_favourite)
-    public void onMovieFavouriteClick() {
-        ContentResolver resolver = getActivity().getContentResolver();
-
-        if (!mMovieInDb) {
-            addMovieToDatabase(resolver);
-        } else {
-            removeMovieFromDatabase(resolver);
-        }
-    }
-
     @Override
     public void onClick(Review review) {
         Intent intent = new Intent(getActivity(), ReviewActivity.class);
@@ -325,149 +284,27 @@ public class MovieDetailFragment extends Fragment implements
     }
 
     @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(getActivity()) {
-            @Override
-            protected void onStartLoading() {
-                super.onStartLoading();
-            }
-
-            @Override
-            public Cursor loadInBackground() {
-                ContentResolver resolver = getActivity().getContentResolver();
-
-                mReviewCursor = resolver.query(
-                        PopMoviesContract.Review.CONTENT_URI,
-                        null,
-                        PopMoviesContract.Review.COLUMN_MOVIE_ID + " = " + mMovie.getId(),
-                        null, null);
-
-                mVideoCursor = resolver.query(
-                        PopMoviesContract.Video.CONTENT_URI,
-                        null,
-                        PopMoviesContract.Video.COLUMN_MOVIE_ID + " = " + mMovie.getId(),
-                        null, null);
-
-                return null;
-            }
-        };
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_detail, menu);
+        MenuItem item = menu.findItem(R.id.share);
+        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(item);
+        setShareActionClick();
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        boolean hasData = mVideoCursor.moveToFirst();
-        videoCardView.setVisibility(View.VISIBLE);
-        if (hasData) {
-            mVideoList = cursorToVideoList(mVideoCursor);
-            inflateVideos();
-        } else {
-            setNoVideos();
-        }
-
-        reviewCardView.setVisibility(View.VISIBLE);
-        hasData = mReviewCursor.moveToFirst();
-        if (hasData) {
-            mReviewList = cursorToReviewArrayList(mReviewCursor);
-            mReviewAdapter.setReviewList(mReviewList);
-        } else {
-            setNoReviews();
-        }
+    private void setShareActionClick() {
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_TEXT, mShareString);
+        mShareActionProvider.setShareIntent(Intent.createChooser(intent, movieDetailShare));
     }
 
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-
-    }
-
-    private void addMovieToDatabase(ContentResolver resolver) {
-        resolver.insert(
-                PopMoviesContract.Movie.CONTENT_URI,
-                createMovieContentValues(mMovie)
-        );
-
+    private void createShareString() {
+        mShareString = mMovie.getTitle() + "\n" + mMovie.getOverview();
         for (Video video : mVideoList) {
-            resolver.insert(
-                    PopMoviesContract.Video.CONTENT_URI,
-                    createVideoContentValues(video));
+            mShareString = mShareString + "\n" + YOUTUBE_BASE_URL + video.getKey();
         }
-
-        for (Review review : mReviewList) {
-            resolver.insert(
-                    PopMoviesContract.Review.CONTENT_URI,
-                    createReviewContentValues(review)
-            );
-        }
-
-        movieFavourite.setImageResource(R.drawable.ic_star_yellow);
-
-        Toast.makeText(
-                getActivity(),
-                mMovie.getTitle() + " saved as favourite.",
-                Toast.LENGTH_SHORT).show();
-    }
-
-    private void removeMovieFromDatabase(ContentResolver resolver) {
-        int numDeleted;
-
-        numDeleted = resolver.delete(
-                PopMoviesContract.Video.CONTENT_URI,
-                PopMoviesContract.Video.COLUMN_MOVIE_ID + " = " + mMovie.getId(),
-                null);
-        Log.d(LOG_TAG, "Number of videos deleted: " + numDeleted);
-
-        numDeleted = resolver.delete(
-                PopMoviesContract.Review.CONTENT_URI,
-                PopMoviesContract.Review.COLUMN_MOVIE_ID + " = " + mMovie.getId(),
-                null
-        );
-        Log.d(LOG_TAG, "Number of reviews deleted: " + numDeleted);
-
-        numDeleted = resolver.delete(
-                ContentUris.withAppendedId(
-                        PopMoviesContract.Movie.CONTENT_URI,
-                        (long) mMovie.getId()),
-                null, null);
-        Log.d(LOG_TAG, "Number of movie deleted: " + numDeleted);
-
-        Toast.makeText(
-                getActivity(),
-                mMovie.getTitle() + " removed from favourite.",
-                Toast.LENGTH_SHORT).show();
-
-        movieFavourite.setImageResource(R.drawable.ic_star_white);
-
-        if (mTwoPane) {
-            mDbMovieUiUpdateListener.updatePosterFragmentUi();
-        }
-    }
-
-    private ContentValues createMovieContentValues(Movie movie) {
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(PopMoviesContract.Movie._ID, movie.getId());
-        contentValues.put(PopMoviesContract.Movie.COLUMN_POSTER_URL, movie.getPosterUrl());
-        contentValues.put(PopMoviesContract.Movie.COLUMN_OVERVIEW, movie.getOverview());
-        contentValues.put(PopMoviesContract.Movie.COLUMN_RELEASE_DATE, movie.getReleaseDate());
-        contentValues.put(PopMoviesContract.Movie.COLUMN_TITLE, movie.getTitle());
-        contentValues.put(PopMoviesContract.Movie.COLUMN_BACKDROP_URL, movie.getBackdropUrl());
-        contentValues.put(PopMoviesContract.Movie.COLUMN_RATING, movie.getVoteAverage());
-        return contentValues;
-    }
-
-    private ContentValues createVideoContentValues(Video video) {
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(PopMoviesContract.Video.COLUMN_MOVIE_ID, mMovie.getId());
-        contentValues.put(PopMoviesContract.Video.COLUMN_KEY, video.getKey());
-        contentValues.put(PopMoviesContract.Video.COLUMN_NAME, video.getName());
-        return contentValues;
-    }
-
-    private ContentValues createReviewContentValues(Review review) {
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(PopMoviesContract.Review.COLUMN_MOVIE_ID, mMovie.getId());
-        contentValues.put(PopMoviesContract.Review.COLUMN_AUTHOR, review.getAuthor());
-        contentValues.put(PopMoviesContract.Review.COLUMN_CONTENT, review.getContent());
-        contentValues.put(PopMoviesContract.Review.COLUMN_URL, review.getUrl());
-        return contentValues;
     }
 
     private void getVideos() {
@@ -484,6 +321,10 @@ public class MovieDetailFragment extends Fragment implements
                     setNoVideos();
                     return;
                 }
+
+                createShareString();
+                setShareActionClick();
+
                 inflateVideos();
                 Log.d(LOG_TAG, "Number of Video received: " + mVideoList.size());
             }
@@ -561,6 +402,214 @@ public class MovieDetailFragment extends Fragment implements
             videos.add(new Video(key, name));
         }
         return videos;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.share:
+                break;
+        }
+        return true;
+    }
+
+    @OnClick(R.id.video_intent)
+    public void onVideoPlayLayoutClick() {
+        Video video = mVideoList.get(mCurrentVideo);
+        String youtubeUrl = YOUTUBE_BASE_URL + video.getKey();
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(youtubeUrl));
+        startActivity(intent);
+    }
+
+    @OnClick(R.id.video_previous)
+    public void onVideoPreviousClick() {
+        mCurrentVideo--;
+        videoTitle.setText(mVideoList.get(mCurrentVideo).getName());
+        numVideosTextView.setText(
+                "Video: " + String.valueOf(mCurrentVideo + 1) + "/" + mVideoList.size()
+        );
+
+        if (mCurrentVideo == 0) {
+            videoPrevious.setVisibility(View.GONE);
+        }
+        if (mCurrentVideo + 1 < mVideoList.size() && videoNext.getVisibility() == View.GONE) {
+            videoNext.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @OnClick(R.id.video_next)
+    public void onVideoNextClick() {
+        mCurrentVideo++;
+        videoTitle.setText(mVideoList.get(mCurrentVideo).getName());
+        numVideosTextView.setText(
+                "Video: " + String.valueOf(mCurrentVideo + 1) + "/" + mVideoList.size()
+        );
+
+        if (mCurrentVideo + 1 == mVideoList.size()) {
+            videoNext.setVisibility(View.GONE);
+        }
+        if (mCurrentVideo > 0 && videoPrevious.getVisibility() == View.GONE) {
+            videoPrevious.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @OnClick(R.id.movie_favourite)
+    public void onMovieFavouriteClick() {
+        ContentResolver resolver = getActivity().getContentResolver();
+
+        if (!mMovieInDb) {
+            addMovieToDatabase(resolver);
+        } else {
+            removeMovieFromDatabase(resolver);
+        }
+    }
+
+    private void addMovieToDatabase(ContentResolver resolver) {
+        resolver.insert(
+                PopMoviesContract.Movie.CONTENT_URI,
+                createMovieContentValues(mMovie)
+        );
+
+        for (Video video : mVideoList) {
+            resolver.insert(
+                    PopMoviesContract.Video.CONTENT_URI,
+                    createVideoContentValues(video));
+        }
+
+        for (Review review : mReviewList) {
+            resolver.insert(
+                    PopMoviesContract.Review.CONTENT_URI,
+                    createReviewContentValues(review)
+            );
+        }
+
+        movieFavourite.setImageResource(R.drawable.ic_star_yellow);
+
+        Toast.makeText(
+                getActivity(),
+                mMovie.getTitle() + " saved as favourite.",
+                Toast.LENGTH_SHORT).show();
+    }
+
+    private void removeMovieFromDatabase(ContentResolver resolver) {
+        int numDeleted;
+
+        numDeleted = resolver.delete(
+                PopMoviesContract.Video.CONTENT_URI,
+                PopMoviesContract.Video.COLUMN_MOVIE_ID + " = " + mMovie.getId(),
+                null);
+        Log.d(LOG_TAG, "Number of videos deleted: " + numDeleted);
+
+        numDeleted = resolver.delete(
+                PopMoviesContract.Review.CONTENT_URI,
+                PopMoviesContract.Review.COLUMN_MOVIE_ID + " = " + mMovie.getId(),
+                null
+        );
+        Log.d(LOG_TAG, "Number of reviews deleted: " + numDeleted);
+
+        numDeleted = resolver.delete(
+                ContentUris.withAppendedId(
+                        PopMoviesContract.Movie.CONTENT_URI,
+                        (long) mMovie.getId()),
+                null, null);
+        Log.d(LOG_TAG, "Number of movie deleted: " + numDeleted);
+
+        Toast.makeText(
+                getActivity(),
+                mMovie.getTitle() + " removed from favourite.",
+                Toast.LENGTH_SHORT).show();
+
+        movieFavourite.setImageResource(R.drawable.ic_star_white);
+
+        if (mTwoPane) {
+            mDbMovieUiUpdateListener.updatePosterFragmentUi();
+        }
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new CursorLoader(getActivity()) {
+            @Override
+            protected void onStartLoading() {
+                super.onStartLoading();
+            }
+
+            @Override
+            public Cursor loadInBackground() {
+                ContentResolver resolver = getActivity().getContentResolver();
+
+                mReviewCursor = resolver.query(
+                        PopMoviesContract.Review.CONTENT_URI,
+                        null,
+                        PopMoviesContract.Review.COLUMN_MOVIE_ID + " = " + mMovie.getId(),
+                        null, null);
+
+                mVideoCursor = resolver.query(
+                        PopMoviesContract.Video.CONTENT_URI,
+                        null,
+                        PopMoviesContract.Video.COLUMN_MOVIE_ID + " = " + mMovie.getId(),
+                        null, null);
+
+                return null;
+            }
+        };
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        boolean hasData = mVideoCursor.moveToFirst();
+        videoCardView.setVisibility(View.VISIBLE);
+        if (hasData) {
+            mVideoList = cursorToVideoList(mVideoCursor);
+            inflateVideos();
+        } else {
+            setNoVideos();
+        }
+
+        reviewCardView.setVisibility(View.VISIBLE);
+        hasData = mReviewCursor.moveToFirst();
+        if (hasData) {
+            mReviewList = cursorToReviewArrayList(mReviewCursor);
+            mReviewAdapter.setReviewList(mReviewList);
+        } else {
+            setNoReviews();
+        }
+
+        createShareString();
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
+    }
+
+    private ContentValues createMovieContentValues(Movie movie) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(PopMoviesContract.Movie._ID, movie.getId());
+        contentValues.put(PopMoviesContract.Movie.COLUMN_POSTER_URL, movie.getPosterUrl());
+        contentValues.put(PopMoviesContract.Movie.COLUMN_OVERVIEW, movie.getOverview());
+        contentValues.put(PopMoviesContract.Movie.COLUMN_RELEASE_DATE, movie.getReleaseDate());
+        contentValues.put(PopMoviesContract.Movie.COLUMN_TITLE, movie.getTitle());
+        contentValues.put(PopMoviesContract.Movie.COLUMN_BACKDROP_URL, movie.getBackdropUrl());
+        contentValues.put(PopMoviesContract.Movie.COLUMN_RATING, movie.getVoteAverage());
+        return contentValues;
+    }
+
+    private ContentValues createVideoContentValues(Video video) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(PopMoviesContract.Video.COLUMN_MOVIE_ID, mMovie.getId());
+        contentValues.put(PopMoviesContract.Video.COLUMN_KEY, video.getKey());
+        contentValues.put(PopMoviesContract.Video.COLUMN_NAME, video.getName());
+        return contentValues;
+    }
+
+    private ContentValues createReviewContentValues(Review review) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(PopMoviesContract.Review.COLUMN_MOVIE_ID, mMovie.getId());
+        contentValues.put(PopMoviesContract.Review.COLUMN_AUTHOR, review.getAuthor());
+        contentValues.put(PopMoviesContract.Review.COLUMN_CONTENT, review.getContent());
+        contentValues.put(PopMoviesContract.Review.COLUMN_URL, review.getUrl());
+        return contentValues;
     }
 
     private ArrayList<Review> cursorToReviewArrayList(Cursor cursor) {
