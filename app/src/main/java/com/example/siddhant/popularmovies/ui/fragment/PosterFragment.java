@@ -84,7 +84,6 @@ public class PosterFragment extends Fragment implements
     @BindString(R.string.no_network_message) String noNetworkMessage;
 
     private String mSortingCriteria = "popular";
-    private int savedScrollState = 0;
 
     public interface RecyclerViewClickCallback {
         void onRecyclerViewItemSelected(Movie movie);

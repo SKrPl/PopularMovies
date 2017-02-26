@@ -76,7 +76,6 @@ public class MovieDetailFragment extends Fragment implements
     private final String VIDEOS_PARCELABLE_SAVED = "videos_parcel";
     private final String REVIEWS_PARCELABLE_SAVED = "reviews_parcel";
     private final String YOUTUBE_BASE_URL = "https://www.youtube.com/watch?v=";
-    private final String MOVIE_DETAIL_SHARE_STRING = "share_string";
     private final int MOVIE_DETAIL_LOADER_ID = 200;
 
     private static final String IS_TWO_PANE = "two_pane";
@@ -121,7 +120,6 @@ public class MovieDetailFragment extends Fragment implements
     @BindString(R.string.movie_detail_share) String movieDetailShare;
 
     private boolean mTwoPane;
-    private boolean mFirstTimeLoaderUse = true;
     private boolean mMovieInDb = false;
     private int mCurrentVideo = 0;
     private String mShareString;
@@ -186,10 +184,9 @@ public class MovieDetailFragment extends Fragment implements
 
         // Data is loaded from the loader if the user is visiting favourite movie and that too only
         // once, and then retrived from parcel in case of an orientation change.
-        if (mFirstTimeLoaderUse && onClickedFavoritePrefValue) {
+        if (savedInstanceState == null && onClickedFavoritePrefValue) {
             getLoaderManager().restartLoader(
                     MOVIE_DETAIL_LOADER_ID, null, this);
-            mFirstTimeLoaderUse = false;
         }
 
         if (!mTwoPane) {
